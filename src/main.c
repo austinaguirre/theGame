@@ -15,8 +15,8 @@ int main(int argc, char* argv[]) {
     // Initialize SDL and create window and renderer
     graphics_init(&window, &renderer);
 
-    // Initialize text rendering
-    text_init(renderer);
+    // Initialize text rendering with the path to your font sprite
+    text_init(renderer, "assets/text/alphabet-7111781_640.png"); // Make sure to adjust the path
 
     // Initialize player
     Player player;
@@ -31,6 +31,8 @@ int main(int argc, char* argv[]) {
     GameState currentGameState = MENU;
 
     int menuSelection = 0; // 0 for "Start Game", 1 for "Quit"
+    SDL_Color textColor = {255, 255, 255, 255}; // White color for text
+    float textScale = 1.0f; // Scale factor for text
 
     while (running) {
         while (SDL_PollEvent(&event)) {
@@ -72,23 +74,29 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Default clear color
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Default clear color to black
         SDL_RenderClear(renderer);
 
         switch (currentGameState) {
             case MENU:
-                render_text(renderer, "Start Game", 100, 100 - (menuSelection * 50));
-                render_text(renderer, "Quit", 100, 150 - (menuSelection * 50));
+                // render_text(renderer, "abcdefg", 100, 100 - (menuSelection * 50), textColor, textScale);
+                render_text_trimmed(renderer, "abcdefgh", 0, 0, textColor, textScale);
+                render_text_trimmed(renderer, "ijklmnop", 0, 100 - (menuSelection * 50), textColor, textScale);
+                render_text_trimmed(renderer, "qrstuvwx", 0, 200 - (menuSelection * 50), textColor, textScale);
+                render_text_trimmed(renderer, "yz012345", 0, 300 - (menuSelection * 50), textColor, textScale);
+                render_text_trimmed(renderer, "6789$:?!", 0, 400 - (menuSelection * 50), textColor, textScale);
+
+                // render_text(renderer, "quit", 100, 150 - (menuSelection * 50), textColor, textScale);
                 break;
             case GAMEPLAY:
                 world_render(&world, renderer);
                 player_render(&player, renderer);
                 break;
             case PAUSE:
-                render_text(renderer, "Paused", 100, 100);
+                render_text(renderer, "paused", 100, 100, textColor, textScale);
                 break;
             case GAME_OVER:
-                render_text(renderer, "Game Over", 100, 100);
+                render_text(renderer, "game over", 100, 100, textColor, textScale);
                 break;
         }
 

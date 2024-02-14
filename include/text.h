@@ -1,16 +1,17 @@
-// include/text.h
 #ifndef TEXT_H
 #define TEXT_H
 
 #include <SDL.h>
 
-// Function to initialize the text rendering system
-void text_init(SDL_Renderer* renderer);
+// Initialize text rendering system
+void text_init(SDL_Renderer* renderer, const char* fontPath);
 
-// Function to render text
-void render_text(SDL_Renderer* renderer, const char* text, int x, int y);
+void render_text_trimmed(SDL_Renderer* renderer, const char* text, int x, int y, SDL_Color color, float scale);
 
-// Function to clean up resources used by the text rendering system
+// Render text with specified color and scale
+void render_text(SDL_Renderer* renderer, const char* text, int x, int y, SDL_Color color, float scale);
+
+// Clean up text rendering system
 void text_cleanup(void);
 
 #endif

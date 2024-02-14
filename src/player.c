@@ -1,11 +1,13 @@
 // src/player.c
+#include "config.h"
+#include "world.h"
 #include "player.h"
 #include "graphics.h"
 #include <SDL_image.h>
 
 void player_init(Player* player, SDL_Renderer* renderer) {
-    player->x = 0; // Initial position
-    player->y = 0;
+    player->x = 4; // Initial position
+    player->y = 4;
     // Use the load_texture function from graphics.c
     player->texture = load_texture(renderer, "assets/images/player.png");
     if (!player->texture) {
@@ -13,11 +15,12 @@ void player_init(Player* player, SDL_Renderer* renderer) {
     }
 }
 
-void player_move(Player* player, int dx, int dy, int gridWidth, int gridHeight) {
-    // Calculate new position and perform boundary checks
+void player_move(Player* player, int dx, int dy, const World* world) {
     int newX = player->x + dx;
     int newY = player->y + dy;
-    if (newX >= 0 && newX < gridWidth && newY >= 0 && newY < gridHeight) {
+
+    // Use world_can_move_to to check if the new position is within bounds and walkable
+    if (world_can_move_to(world, newX, newY)) {
         player->x = newX;
         player->y = newY;
     }
@@ -25,7 +28,12 @@ void player_move(Player* player, int dx, int dy, int gridWidth, int gridHeight) 
 
 
 void player_render(Player* player, SDL_Renderer* renderer) {
-    // Use the render_texture function from graphics.c
-    // Adjust the size if needed to match your grid cell size
-    render_texture(renderer, player->texture, player->x * 32, player->y * 32);
+    SDL_Rect dstRect = {
+        player->x * CELL_WIDTH,
+        player->y * CELL_HEIGHT,
+        CELL_WIDTH,
+        CELL_HEIGHT
+    };
+    SDL_RenderCopy(renderer, player->texture, NULL, &dstRect);
 }
+

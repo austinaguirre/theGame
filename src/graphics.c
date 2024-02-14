@@ -1,10 +1,12 @@
 // src/graphics.c
+#include "config.h"
 #include "graphics.h"
 #include <SDL_image.h>
+#include "world.h"
 
 void graphics_init(SDL_Window** window, SDL_Renderer** renderer) {
     SDL_Init(SDL_INIT_VIDEO);
-    *window = SDL_CreateWindow("2D Adventure Game", 100, 100, 800, 600, 0);
+    *window = SDL_CreateWindow("2D Adventure Game", 100, 100, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     *renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED);
 }
 

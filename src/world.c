@@ -2,36 +2,67 @@
 #include "graphics.h"
 #include "world.h"
 #include <stdbool.h>
-#include <stdlib.h> // For rand()
-#include <time.h>   // For time()
+#include <stdlib.h>
+#include <time.h>
+#include <math.h>
+#include <stdlib.h>
+#include "perlin_noise.h"
 
-void world_init(World* world, int width, int height) {
-    srand(time(NULL)); // Seed the random number generator for biome generation
+
+void world_init(World* world, int width, int height, unsigned int seed) {
+    initPerlinNoise(seed); // Make sure this is implemented to initialize Perlin noise with the seed
 
     world->width = width;
     world->height = height;
     world->map = malloc(height * sizeof(Tile*));
+
+    // Parameters for noise and island generation
+    float biomeScale = 0.05; // Adjust for biome granularity
+    float islandFactor = 1.25; // Controls "roundness" and size of the island
+
+    // Calculate the center of the map
+    float centerX = width / 2.0f;
+    float centerY = height / 2.0f;
+    float maxDistance = sqrt(centerX * centerX + centerY * centerY); // Max distance from center to corner
+
     for (int y = 0; y < height; y++) {
         world->map[y] = malloc(width * sizeof(Tile));
+
         for (int x = 0; x < width; x++) {
-            // Randomly assign biomes based on simple conditions
-            int randValue = rand() % 100; // Generate a random value between 0 and 99
-            if (randValue < 10) {
-                world->map[y][x].type = TILE_WATER;
-            } else if (randValue < 20) {
-                world->map[y][x].type = TILE_FOREST;
-            } else if (randValue < 30) {
-                world->map[y][x].type = TILE_MOUNTAIN;
-            } else if (randValue < 40) {
-                world->map[y][x].type = TILE_DESERT;
+            // Calculate distance from the center of the map
+            float distanceX = centerX - x;
+            float distanceY = centerY - y;
+            float distance = sqrt(distanceX * distanceX + distanceY * distanceY);
+
+            // Normalize distance to range [0, 1]
+            float normalizedDistance = distance / maxDistance;
+
+            // Island shape and edge water
+            float islandMask = 1.0f - pow(normalizedDistance * islandFactor, 1.5);
+
+            // Generate biome using Perlin noise
+            float biomeNoise = perlin(x * biomeScale, y * biomeScale);
+
+            // Apply island mask to biome noise
+            biomeNoise *= islandMask;
+
+            // Assign tile types based on biome noise
+            if (biomeNoise < 0.2) {
+                world->map[y][x].type = TILE_WATER; // Deep ocean at the edges
+            } else if (biomeNoise < 0.3) {
+                world->map[y][x].type = TILE_SAND; // Beaches near the coast
+            } else if (biomeNoise < 0.4) {
+                world->map[y][x].type = TILE_GRASS; // Grasslands
+            } else if (biomeNoise < 0.6) {
+                world->map[y][x].type = TILE_FOREST; // Forests
+            } else if (biomeNoise < 0.8) {
+                world->map[y][x].type = TILE_MOUNTAIN; // Mountains
             } else {
-                world->map[y][x].type = TILE_GRASS;
+                world->map[y][x].type = TILE_SNOW; // Snowy peaks at the highest elevations
             }
         }
     }
 }
-
-
 
 
 bool world_can_move_to(const World* world, int x, int y) {

@@ -26,9 +26,10 @@ int main(int argc, char* argv[]) {
 
     World world;
     // Example world size; adjust as needed for your game
-    int worldWidth = 100; // Width of the world in tiles
-    int worldHeight = 100; // Height of the world in tiles
-    world_init(&world, worldWidth, worldHeight); // Initialize with dynamic size
+    int worldWidth = 200; // Width of the world in tiles
+    int worldHeight = 200; // Height of the world in tiles
+    unsigned int seed = 123456789;
+    world_init(&world, worldWidth, worldHeight, seed); // Initialize with dynamic size
 
     bool running = true;
     SDL_Event event;
@@ -67,7 +68,7 @@ int main(int argc, char* argv[]) {
                     if (event.key.keysym.sym == SDLK_RETURN) {
                         currentGameState = GAMEPLAY; // Restart game from game over
                         player_init(&player, renderer); // Reinitialize player state
-                        world_init(&world, worldWidth, worldHeight); // Reset world
+                        world_init(&world, worldWidth, worldHeight, seed); // Reset world
                     }
                     break;
             }

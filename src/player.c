@@ -6,8 +6,8 @@
 #include <SDL_image.h>
 
 void player_init(Player* player, SDL_Renderer* renderer) {
-    player->x = 50; // Initial position
-    player->y = 50;
+    player->x = 100; // Initial position
+    player->y = 100;
     // Use the load_texture function from graphics.c
     player->texture = load_texture(renderer, "assets/images/player.png");
     if (!player->texture) {

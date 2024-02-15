@@ -55,26 +55,38 @@ void world_render(const World* world, SDL_Renderer* renderer, const Camera* came
             // Ensure the loop only iterates over valid tile indices
             if (x >= 0 && y >= 0 && x < world->width && y < world->height) {
                 SDL_Rect tile = {(x * TILE_SIZE) - camera->x, (y * TILE_SIZE) - camera->y, TILE_SIZE, TILE_SIZE};
+                
                 // Determine the color based on the tile type
                 switch (world->map[y][x].type) {
                     case TILE_WALL:
-                        SDL_SetRenderDrawColor(renderer, 139, 69, 19, 255);
+                        SDL_SetRenderDrawColor(renderer, 139, 69, 19, 255); // Brown
                         break;
                     case TILE_WATER:
-                        SDL_SetRenderDrawColor(renderer, 0, 105, 148, 255);
+                    case TILE_LAKE:
+                    case TILE_RIVER:
+                        SDL_SetRenderDrawColor(renderer, 0, 105, 148, 255); // Blue
                         break;
                     case TILE_FOREST:
-                        SDL_SetRenderDrawColor(renderer, 34, 139, 19, 255);
+                        SDL_SetRenderDrawColor(renderer, 34, 139, 19, 255); // Dark Green
                         break;
                     case TILE_MOUNTAIN:
-                        SDL_SetRenderDrawColor(renderer, 105, 105, 105, 255);
+                        SDL_SetRenderDrawColor(renderer, 105, 105, 105, 255); // Grey
                         break;
                     case TILE_DESERT:
-                        SDL_SetRenderDrawColor(renderer, 210, 180, 140, 255);
+                        SDL_SetRenderDrawColor(renderer, 210, 180, 140, 255); // Sandy color
+                        break;
+                    case TILE_SNOW:
+                        SDL_SetRenderDrawColor(renderer, 255, 250, 250, 255); // Snow white
+                        break;
+                    case TILE_JUNGLE:
+                        SDL_SetRenderDrawColor(renderer, 0, 100, 0, 255); // Deep Green
+                        break;
+                    case TILE_CITY:
+                        SDL_SetRenderDrawColor(renderer, 105, 105, 105, 255); // Grey, maybe add some texture or pattern here
                         break;
                     case TILE_GRASS:
                     default:
-                        SDL_SetRenderDrawColor(renderer, 34, 139, 34, 255);
+                        SDL_SetRenderDrawColor(renderer, 34, 139, 34, 255); // Light Green
                         break;
                 }
                 SDL_RenderFillRect(renderer, &tile);
@@ -82,5 +94,6 @@ void world_render(const World* world, SDL_Renderer* renderer, const Camera* came
         }
     }
 }
+
 
 

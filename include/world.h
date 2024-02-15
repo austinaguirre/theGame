@@ -11,10 +11,16 @@ typedef enum {
     TILE_EMPTY,
     TILE_WALL,
     TILE_WATER,
+    TILE_SAND,
+    TILE_LAKE,
+    TILE_RIVER,
     TILE_GRASS,
     TILE_FOREST,
     TILE_MOUNTAIN,
     TILE_DESERT,
+    TILE_SNOW,
+    TILE_JUNGLE,
+    TILE_CITY,
 } TileType;
 
 
@@ -31,7 +37,7 @@ typedef struct World {
 
 
 // Function declarations
-void world_init(World* world, int width, int height);
+void world_init(World* world, int width, int height, unsigned int seed);
 bool world_can_move_to(const World* world, int x, int y);
 
 #endif

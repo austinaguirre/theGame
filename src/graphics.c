@@ -38,11 +38,11 @@ void player_render(Player* player, SDL_Renderer* renderer, const Camera* camera)
 
 
 void world_render(const World* world, SDL_Renderer* renderer, const Camera* camera) {
-    // Calculate the start and end tiles to render based on the camera's position and size
-    int startx = camera->x / 40; // Assuming 40x40 tiles
-    int endx = (camera->x + camera->width) / 40;
-    int starty = camera->y / 40;
-    int endy = (camera->y + camera->height) / 40;
+    // Adjusted calculation for start and end tiles to include a buffer for partial tiles
+    int startx = camera->x / TILE_SIZE - 1; // Add one tile buffer to start if not at the world's start
+    int endx = (camera->x + camera->width) / TILE_SIZE + 1; // Add one tile buffer to end
+    int starty = camera->y / TILE_SIZE - 1; // Same for Y
+    int endy = (camera->y + camera->height) / TILE_SIZE + 1;
 
     // Ensure we don't try to render outside the world bounds
     startx = startx < 0 ? 0 : startx;
@@ -52,34 +52,35 @@ void world_render(const World* world, SDL_Renderer* renderer, const Camera* came
 
     for (int y = starty; y < endy; y++) {
         for (int x = startx; x < endx; x++) {
-            // Calculate the tile's position on the screen based on the camera's offset
-            SDL_Rect tile = {(x * 40) - camera->x, (y * 40) - camera->y, 40, 40};
-            
-            // Set the rendering color based on the tile type
-            switch (world->map[y][x].type) {
-                case TILE_WALL:
-                    SDL_SetRenderDrawColor(renderer, 139, 69, 19, 255);
-                    break;
-                case TILE_WATER:
-                    SDL_SetRenderDrawColor(renderer, 0, 105, 148, 255);
-                    break;
-                case TILE_FOREST:
-                    SDL_SetRenderDrawColor(renderer, 34, 139, 19, 255);
-                    break;
-                case TILE_MOUNTAIN:
-                    SDL_SetRenderDrawColor(renderer, 105, 105, 105, 255);
-                    break;
-                case TILE_DESERT:
-                    SDL_SetRenderDrawColor(renderer, 210, 180, 140, 255);
-                    break;
-                case TILE_GRASS:
-                default:
-                    SDL_SetRenderDrawColor(renderer, 34, 139, 34, 255);
-                    break;
+            // Ensure the loop only iterates over valid tile indices
+            if (x >= 0 && y >= 0 && x < world->width && y < world->height) {
+                SDL_Rect tile = {(x * TILE_SIZE) - camera->x, (y * TILE_SIZE) - camera->y, TILE_SIZE, TILE_SIZE};
+                // Determine the color based on the tile type
+                switch (world->map[y][x].type) {
+                    case TILE_WALL:
+                        SDL_SetRenderDrawColor(renderer, 139, 69, 19, 255);
+                        break;
+                    case TILE_WATER:
+                        SDL_SetRenderDrawColor(renderer, 0, 105, 148, 255);
+                        break;
+                    case TILE_FOREST:
+                        SDL_SetRenderDrawColor(renderer, 34, 139, 19, 255);
+                        break;
+                    case TILE_MOUNTAIN:
+                        SDL_SetRenderDrawColor(renderer, 105, 105, 105, 255);
+                        break;
+                    case TILE_DESERT:
+                        SDL_SetRenderDrawColor(renderer, 210, 180, 140, 255);
+                        break;
+                    case TILE_GRASS:
+                    default:
+                        SDL_SetRenderDrawColor(renderer, 34, 139, 34, 255);
+                        break;
+                }
+                SDL_RenderFillRect(renderer, &tile);
             }
-
-            // Render the tile
-            SDL_RenderFillRect(renderer, &tile);
         }
     }
 }
+
+

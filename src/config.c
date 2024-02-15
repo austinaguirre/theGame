@@ -6,3 +6,5 @@ const int GRID_COLS = 20;
 const int GRID_ROWS = 15;
 const int CELL_WIDTH = WINDOW_WIDTH / GRID_COLS;
 const int CELL_HEIGHT = WINDOW_HEIGHT / GRID_ROWS;
+const int TILE_SIZE = 40;
+

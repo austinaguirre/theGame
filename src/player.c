@@ -1,8 +1,8 @@
 // src/player.c
+#include "graphics.h"
 #include "config.h"
 #include "world.h"
 #include "player.h"
-#include "graphics.h"
 #include <SDL_image.h>
 
 void player_init(Player* player, SDL_Renderer* renderer) {
@@ -15,7 +15,7 @@ void player_init(Player* player, SDL_Renderer* renderer) {
     }
 }
 
-void player_move(Player* player, int dx, int dy, const World* world) {
+void player_move(Player* player, int dx, int dy, const struct World* world) {
     int newX = player->x + dx;
     int newY = player->y + dy;
 
@@ -27,13 +27,4 @@ void player_move(Player* player, int dx, int dy, const World* world) {
 }
 
 
-void player_render(Player* player, SDL_Renderer* renderer) {
-    SDL_Rect dstRect = {
-        player->x * CELL_WIDTH,
-        player->y * CELL_HEIGHT,
-        CELL_WIDTH,
-        CELL_HEIGHT
-    };
-    SDL_RenderCopy(renderer, player->texture, NULL, &dstRect);
-}
 

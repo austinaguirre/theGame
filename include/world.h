@@ -5,14 +5,33 @@
 #include <SDL.h>
 #include <stdbool.h>
 
+struct Camera;
+
+typedef enum {
+    TILE_EMPTY,
+    TILE_WALL,
+    TILE_WATER,
+    TILE_GRASS,
+    TILE_FOREST,
+    TILE_MOUNTAIN,
+    TILE_DESERT,
+} TileType;
+
+
+typedef struct {
+    TileType type;
+    // Add more properties here (e.g., isPassable, spriteIndex, etc.)
+} Tile;
+
 // World structure
-typedef struct World{
-    int map[18][25]; // Example size, adjust based on your needs
+typedef struct World {
+    Tile** map;
+    int width, height;
 } World;
 
+
 // Function declarations
-void world_init(World* world);
-void world_render(const World* world, SDL_Renderer* renderer);
+void world_init(World* world, int width, int height);
 bool world_can_move_to(const World* world, int x, int y);
 
 #endif

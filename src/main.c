@@ -2,108 +2,106 @@
 #include <SDL_image.h>
 #include <stdbool.h>
 #include "game.h"
-#include "graphics.h"
 #include "input.h"
-#include "player.h"
 #include "world.h"
+#include "player.h"
+#include "graphics.h"
 #include "text.h"
+#include "main_menu.h"
+#include "config.h"
 
 int main(int argc, char* argv[]) {
     SDL_Window* window = NULL;
     SDL_Renderer* renderer = NULL;
 
-    // Initialize SDL and create window and renderer
+    // Initialize the various components of the game
     graphics_init(&window, &renderer);
+    text_init(renderer, "assets/text/alphabet-7111781_640.png");
+    main_menu_init(renderer);
 
-    // Initialize text rendering with the path to your font sprite
-    text_init(renderer, "assets/text/alphabet-7111781_640.png"); // Make sure to adjust the path
-
-    // Initialize player
     Player player;
     player_init(&player, renderer);
 
-    // Initialize the world
+    Camera camera = {0, 0, WINDOW_WIDTH, WINDOW_HEIGHT}; // Replace WINDOW_WIDTH and WINDOW_HEIGHT with actual values
+
     World world;
-    world_init(&world);
+    // Example world size; adjust as needed for your game
+    int worldWidth = 100; // Width of the world in tiles
+    int worldHeight = 100; // Height of the world in tiles
+    world_init(&world, worldWidth, worldHeight); // Initialize with dynamic size
 
     bool running = true;
     SDL_Event event;
     GameState currentGameState = MENU;
 
-    int menuSelection = 0; // 0 for "Start Game", 1 for "Quit"
-    SDL_Color textColor = {255, 255, 255, 255}; // White color for text
-    float textScale = 1.0f; // Scale factor for text
+    int menuSelection = 0; // For handling menu selection
+    SDL_Color textColor = {255, 255, 255, 255}; // Default text color
+    float textScale = 1.0f; // Default text scale
 
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 running = false;
-            } else if (event.type == SDL_KEYDOWN) {
-                switch (currentGameState) {
-                    case MENU:
-                        if (event.key.keysym.sym == SDLK_DOWN || event.key.keysym.sym == SDLK_UP) {
-                            menuSelection = !menuSelection; // Toggle menu selection
-                        } else if (event.key.keysym.sym == SDLK_RETURN) {
-                            if (menuSelection == 0) {
-                                currentGameState = GAMEPLAY; // Start the game
-                            } else {
-                                running = false; // Quit the game
-                            }
-                        }
-                        break;
-                    case GAMEPLAY:
-                        if (event.key.keysym.sym == SDLK_ESCAPE) {
-                            currentGameState = PAUSE; // Pause the game on ESC
-                        } else {
-                            handle_input(&event, &running, &player, &world);
-                        }
-                        break;
-                    case PAUSE:
-                        if (event.key.keysym.sym == SDLK_ESCAPE) { // Press ESC again to resume
-                            currentGameState = GAMEPLAY;
-                        }
-                        break;
-                    case GAME_OVER:
-                        if (event.key.keysym.sym == SDLK_RETURN) { // Press ENTER to restart
-                            currentGameState = GAMEPLAY;
-                            player_init(&player, renderer); // Reset player
-                            world_init(&world); // Reset world
-                        }
-                        break;
-                }
+            }
+
+            // Handle input based on the current game state
+            switch (currentGameState) {
+                case MENU:
+                    main_menu_handle_mouse_movement(&event, &menuSelection);
+                    main_menu_handle_mouse_click(&event, &running, &currentGameState);
+                    main_menu_handle_keyboard_input(&event, &running, &currentGameState, &menuSelection);
+                    break;
+                case GAMEPLAY:
+                    if (event.key.keysym.sym == SDLK_ESCAPE && event.type == SDL_KEYDOWN) {
+                        currentGameState = PAUSE; // Toggle pause state with ESC
+                    } else {
+                        handle_input(&event, &running, &player, &world);
+                    }
+                    break;
+                case PAUSE:
+                    if (event.key.keysym.sym == SDLK_ESCAPE && event.type == SDL_KEYDOWN) {
+                        currentGameState = GAMEPLAY; // Resume game from pause
+                    }
+                    break;
+                case GAME_OVER:
+                    if (event.key.keysym.sym == SDLK_RETURN) {
+                        currentGameState = GAMEPLAY; // Restart game from game over
+                        player_init(&player, renderer); // Reinitialize player state
+                        world_init(&world, worldWidth, worldHeight); // Reset world
+                    }
+                    break;
             }
         }
 
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Default clear color to black
-        SDL_RenderClear(renderer);
+        if (currentGameState == GAMEPLAY) {
+            update_camera_position(&camera, &world, &player);
+        }
 
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Set background color
+        SDL_RenderClear(renderer); // Clear the screen with the background color
+
+        // Render the current state of the game
         switch (currentGameState) {
             case MENU:
-                // render_text(renderer, "abcdefg", 100, 100 - (menuSelection * 50), textColor, textScale);
-                render_text_trimmed(renderer, "abcdefgh", 0, 0, textColor, textScale);
-                render_text_trimmed(renderer, "ijklmnop", 0, 100 - (menuSelection * 50), textColor, textScale);
-                render_text_trimmed(renderer, "qrstuvwx", 0, 200 - (menuSelection * 50), textColor, textScale);
-                render_text_trimmed(renderer, "yz012345", 0, 300 - (menuSelection * 50), textColor, textScale);
-                render_text_trimmed(renderer, "6789$:?!", 0, 400 - (menuSelection * 50), textColor, textScale);
-
-                // render_text(renderer, "quit", 100, 150 - (menuSelection * 50), textColor, textScale);
+                main_menu_render(renderer, menuSelection);
                 break;
             case GAMEPLAY:
-                world_render(&world, renderer);
-                player_render(&player, renderer);
+                world_render(&world, renderer, &camera); // Adjusted to pass the camera
+                player_render(&player, renderer, &camera); // Ensure player_render is adapted to consider the camera
                 break;
             case PAUSE:
-                render_text(renderer, "paused", 100, 100, textColor, textScale);
+                render_text(renderer, "paused", 100, 100, textColor, textScale); // Display pause message
                 break;
             case GAME_OVER:
-                render_text(renderer, "game over", 100, 100, textColor, textScale);
+                render_text(renderer, "Game Over", 100, 100, textColor, textScale); // Display game over message
                 break;
         }
 
-        SDL_RenderPresent(renderer);
+        SDL_RenderPresent(renderer); // Update the screen with rendered content
     }
 
-    // Cleanup
+    // Clean up resources
+    main_menu_cleanup();
     text_cleanup();
     SDL_DestroyTexture(player.texture);
     SDL_DestroyRenderer(renderer);

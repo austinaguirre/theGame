@@ -7,5 +7,6 @@ extern const int GRID_COLS;
 extern const int GRID_ROWS;
 extern const int CELL_WIDTH;
 extern const int CELL_HEIGHT;
+extern const int TILE_SIZE;
 
 #endif

@@ -225,6 +225,19 @@ void renderMiniMap(SDL_Renderer* renderer, World* world, Player* player, float s
         max(1, tileWidth), // Ensure the player marker is visible
         max(1, tileHeight)
     };
+    int playerTileX = player->x;
+    int playerTileY = player->y;
+    // Ensure the player's position is within the world bounds before accessing the map array
+if (playerTileX >= 0 && playerTileX < world->width && playerTileY >= 0 && playerTileY < world->height) {
+    Tile playerTile = world->map[playerTileY][playerTileX];
+    printf("Player is on tile at (%d, %d) with Height: %s, Terrain: %s, WaterBody: %s, SpecialFeature: %s, Structure: %s\n",
+           playerTileX, playerTileY,
+           HeightTypeNames[playerTile.height],
+           TerrainTypeNames[playerTile.terrain],
+           WaterBodyTypeNames[playerTile.waterBody],
+           SpecialFeatureTypeNames[playerTile.specialFeature],
+           StructureTypeNames[playerTile.structure]);
+}
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Red color for the player
     SDL_RenderFillRect(renderer, &playerRect);
 }

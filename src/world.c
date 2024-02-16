@@ -26,19 +26,27 @@ void generateHeightMap(World* world, float scale, unsigned int seed) {
             
             // Normalize distance to a value between 0 and 1
             float normalizedDistance = distanceToCenter / maxDistance;
-            
-            // Adjust Perlin noise value based on distance to center
-            // Closer to the edge, the noise value is reduced to create ocean
-            float noiseValue = perlin(x * scale, y * scale) * (1.0 - normalizedDistance);
 
+            // Calculate a latitude factor to favor mountains at the north and south
+            float latitudeFactor = fabs(y - centerY) / centerY; // Ranges from 0 at the center to 1 at the edges
+            
+            // Adjust Perlin noise value based on distance to center and latitude factor
+            float noiseValue = perlin(x * scale, y * scale) * (1.0 - normalizedDistance) * (1.0 + latitudeFactor * 0.5);
+
+            // Threshold adjustments for more pronounced mountain regions in the north and south
+            float veryLowThreshold = 0.1;
+            float lowThreshold = 0.2;
+            float mediumThreshold = 0.5 + latitudeFactor * 0.15; // Increase threshold for mountains with latitude
+            float highThreshold = 0.7 + latitudeFactor * 0.1; // Slightly increase for very high regions
+            
             // Map the adjusted noise value to a terrain height category
-            if (noiseValue < 0.05) {
+            if (noiseValue < veryLowThreshold) {
                 world->map[y][x].height = TITLE_VERY_LOW; // Deep oceans at the edge
-            } else if (noiseValue < 0.15) {
+            } else if (noiseValue < lowThreshold) {
                 world->map[y][x].height = TITLE_LOW; // Shallow waters, beaches
-            } else if (noiseValue < 0.4) {
+            } else if (noiseValue < mediumThreshold) {
                 world->map[y][x].height = TITLE_MEDIUM; // Mainland, forests, grasslands
-            } else if (noiseValue < 0.6) {
+            } else if (noiseValue < highThreshold) {
                 world->map[y][x].height = TITLE_HIGH; // Mountains and highlands
             } else {
                 world->map[y][x].height = TITLE_VERY_HIGH; // Peaks, possibly snowy or icy regions
@@ -48,108 +56,308 @@ void generateHeightMap(World* world, float scale, unsigned int seed) {
 }
 
 void applyBiomesBasedOnHeightAndPosition(World* world) {
-    // Constants for biome placement logic
-    int northThreshold = world->height / 3;
-    int southThreshold = 2 * world->height / 3;
+    // Constants for noise scale
+    float biomeScale = 0.1;
+    float moistureScale = 0.1; // Optional for more complexity
 
-    // Flags to ensure unique biomes spawn only once
-    bool swampSpawned = false;
-    bool deadLandSpawned = false;
-    bool spiderLandSpawned = false;
-    bool scorchedLandSpawned = false;
-
-    // Loop through each cell in the world map
     for (int y = 0; y < world->height; y++) {
         for (int x = 0; x < world->width; x++) {
-            // Handle water bodies separately
-            if (world->map[y][x].height == TITLE_VERY_LOW || world->map[y][x].height == TITLE_LOW) {
-                world->map[y][x].terrain = (world->map[y][x].height == TITLE_VERY_LOW) ? TITLE_DEFAULT_TERRAIN : TITLE_DEFAULT_TERRAIN;
-                world->map[y][x].waterBody = (world->map[y][x].height == TITLE_VERY_LOW) ? TITLE_DEEP_OCEAN : TITLE_OCEAN;
-                if (isAdjacentToLand(world, x, y)) { // Pseudo-function to check adjacency
-                    world->map[y][x].terrain = TITLE_BEACH;
-                }
-                continue;
-            }
+            // Compute latitude and longitude factors (0 at center, increasing towards edges)
+            float latFactor = fabs(y - world->height / 2.0) / (world->height / 2.0);
+            float longFactor = fabs(x - world->width / 2.0) / (world->width / 2.0);
 
-            // Generate terrain based on position and height
-            if (y < northThreshold) { // Northern part of the map
-                if (!scorchedLandSpawned && world->map[y][x].height == TITLE_MEDIUM && rand() % 100 < 5) { // 5% chance
-                    world->map[y][x].terrain = TITLE_SCORCHED_LANDS;
-                    scorchedLandSpawned = true;
-                } else if (world->map[y][x].height == TITLE_VERY_HIGH) {
-                    world->map[y][x].terrain = TITLE_TUNDRA;
-                }
-            } else if (y > southThreshold) { // Southern part of the map
-                if (!swampSpawned && world->map[y][x].height == TITLE_MEDIUM && rand() % 100 < 10) { // 10% chance
-                    world->map[y][x].terrain = TITLE_SWAMPLAND;
-                    swampSpawned = true;
-                } else if (!spiderLandSpawned && world->map[y][x].height == TITLE_HIGH && rand() % 100 < 10) { // 10% chance
-                    world->map[y][x].terrain = TITLE_SPIDERLANDS;
-                    spiderLandSpawned = true;
-                }
-            }
+            // Determine biome based on height and additional noise layers
+            float biomeNoise = perlin(x * biomeScale, y * biomeScale);
+            // Optional: float moistureNoise = perlin(x * moistureScale, y * moistureScale);
 
-            // General terrain logic for all areas
-            switch (world->map[y][x].height) {
-                case TITLE_MEDIUM:
-                    world->map[y][x].terrain = determineMediumTerrain(world, x, y, southThreshold); // Pseudo-function to decide terrain
-                    break;
-                case TITLE_HIGH:
-                    world->map[y][x].terrain = TITLE_MOUNTAIN;
-                    break;
-                default:
-                    world->map[y][x].terrain = TITLE_GRASSLANDS; // Default terrain
-                    break;
+            if (world->map[y][x].height == TITLE_MEDIUM) {
+                assignMediumBiome(&world->map[y][x], biomeNoise, latFactor, longFactor);
+            } else if (world->map[y][x].height == TITLE_HIGH || world->map[y][x].height == TITLE_VERY_HIGH) {
+                assignHighBiome(&world->map[y][x], biomeNoise, latFactor);
+            } else if (world->map[y][x].height == TITLE_LOW) {
+                assignLowBiome(&world->map[y][x], biomeNoise);
+            } else if(world->map[y][x].height == TITLE_VERY_LOW){
+                world->map[y][x].waterBody = TITLE_DEEP_OCEAN; // Very low regions become deep ocean
             }
         }
     }
 
-    // Further logic to handle unique biomes and special features, such as ensuring only one Dead Land and placing jungles, savannah, etc.
-    // This could include iterating again with specific conditions to place these unique biomes or adjusting existing terrain based on surrounding conditions.
+    createBeaches(world);
+    detectAndSetLakes(world);
+    spawnRivers(world);
 }
 
-// Determines the medium terrain type based on additional logic
-TerrainType determineMediumTerrain(World* world, int x, int y, int southThreshold) {
-    float noiseValue = perlin(x * 0.05, y * 0.05); // Use Perlin noise for variability
+void spawnRivers(World* world) {
+    int numberOfRivers = 5;
 
-    // Adjust these thresholds to control biome distribution
-    if (noiseValue < 0.3) {
-        return TITLE_FOREST;
-    } else if (noiseValue < 0.6) {
-        if (y > southThreshold) {
-            return TITLE_SAVANNAH; // More likely to occur in the southern part
-        } else {
-            return TITLE_GRASSLANDS;
+    for (int i = 0; i < numberOfRivers; i++) {
+        // Select a random starting point for the river
+        int startX, startY;
+        do {
+            startX = rand() % world->width;
+            startY = rand() % world->height;
+        } while (!isValidRiverSource(world, startX, startY));
+
+        // Generate the river path
+        generateRiverPath(world, startX, startY);
+    }
+}
+
+bool isValidRiverSource(World* world, int x, int y) {
+    // Check if the tile is suitable for being a river source
+    return world->map[y][x].height == TITLE_MEDIUM &&
+           world->map[y][x].waterBody == TITLE_DEFAULT_WATER &&
+           world->map[y][x].structure == TITLE_DEFAULT_STRUCTURE;
+}
+
+void generateRiverPath(World* world, int startX, int startY) {
+    int currentX = startX, currentY = startY;
+    bool continueRiver = true;
+    int retries; // Number of retries for finding a new direction
+
+    while (continueRiver) {
+        world->map[currentY][currentX].waterBody = TITLE_RIVER; // Mark the tile as part of a river
+
+        bool directionFound = false;
+        retries = 4; // Try each direction once before giving up
+
+        while (!directionFound && retries > 0) {
+            float noise = perlin(currentX * 0.1, currentY * 0.1); // Adjust scale as needed
+            int direction = (int)(noise * 8) % 4; // Convert noise to a direction (0-3)
+
+            int nextX = currentX, nextY = currentY;
+
+            // Determine potential next position based on direction
+            switch (direction) {
+                case 0: nextY--; break; // Up
+                case 1: nextX++; break; // Right
+                case 2: nextY++; break; // Down
+                case 3: nextX--; break; // Left
+            }
+
+            // Check if the next position is a valid continuation for the river
+            if (canContinueRiver(world, nextX, nextY)) {
+                currentX = nextX;
+                currentY = nextY;
+                directionFound = true;
+            } else {
+                retries--;
+                noise += 0.1; // Adjust noise to try a different direction next time
+            }
         }
+
+        if (!directionFound) {
+            // No valid direction found after retries, stop the river
+            continueRiver = false;
+        }
+    }
+}
+
+bool canContinueRiver(World* world, int x, int y) {
+    // Check bounds
+    if (x < 0 || x >= world->width || y < 0 || y >= world->height) {
+        return false; // Stop if out of bounds
+    }
+
+    // Stop if the tile is not suitable for the river to continue
+    return world->map[y][x].height == TITLE_MEDIUM &&
+           world->map[y][x].waterBody == TITLE_DEFAULT_WATER &&
+           world->map[y][x].structure == TITLE_DEFAULT_STRUCTURE;
+}
+
+
+
+
+bool isPotentialBeachTile(World* world, int x, int y) {
+    // Only consider medium tiles for potential beach conversion
+    if (world->map[y][x].height != TITLE_MEDIUM) {
+        return false;
+    }
+
+    // Check all adjacent tiles for water
+    for (int offsetY = -1; offsetY <= 1; offsetY++) {
+        for (int offsetX = -1; offsetX <= 1; offsetX++) {
+            // Skip the center tile
+            if (offsetX == 0 && offsetY == 0) continue;
+
+            int adjacentX = x + offsetX;
+            int adjacentY = y + offsetY;
+
+            // Ensure we're not checking outside the map boundaries
+            if (adjacentX >= 0 && adjacentX < world->width && adjacentY >= 0 && adjacentY < world->height) {
+                // Check if the adjacent tile is water
+                if (world->map[adjacentY][adjacentX].height == TITLE_VERY_LOW || world->map[adjacentY][adjacentX].height == TITLE_LOW) {
+                    return true; // This tile is a potential beach
+                }
+            }
+        }
+    }
+
+    // Not adjacent to water or not the right height
+    return false;
+}
+
+
+void createBeaches(World* world) {
+    for (int y = 0; y < world->height; y++) {
+        for (int x = 0; x < world->width; x++) {
+            if (isPotentialBeachTile(world, x, y)) {
+                world->map[y][x].terrain = TITLE_BEACH; // Convert to beach
+            }
+        }
+    }
+}
+
+
+
+void detectAndSetLakes(World* world) {
+    for (int y = 0; y < world->height; y++) {
+        for (int x = 0; x < world->width; x++) {
+            // Check for potential lake tile
+            if (isPotentialLakeTile(world, x, y)) {
+                // Perform a flood fill to determine if it's enclosed by beach tiles
+                if (isEnclosedByBeach(world, x, y)) {
+                    setLakeTiles(world, x, y);
+                }
+            }
+        }
+    }
+}
+
+bool isPotentialLakeTile(World* world, int x, int y) {
+    Tile tile = world->map[y][x];
+    return tile.height == TITLE_LOW && tile.terrain == TITLE_DEFAULT_TERRAIN && tile.waterBody == TITLE_OCEAN;
+}
+
+bool checkEnclosure(World* world, int x, int y, bool* visited) {
+    int index = y * world->width + x; // Calculate the index in the single-dimension array
+
+    // Check bounds
+    if (x < 0 || x >= world->width || y < 0 || y >= world->height) {
+        return false; // Touching the edge means it's not enclosed
+    }
+
+    // If already visited or not a potential lake tile, skip
+    if (visited[index] || !isPotentialLakeTile(world, x, y)) {
+        return true; // Assume true to continue checking other tiles
+    }
+
+    visited[index] = true; // Mark as visited
+
+    // Check surrounding tiles to verify enclosure by beach tiles
+    // Directly adjacent tiles (4-way check)
+    bool up = checkEnclosure(world, x, y - 1, visited);
+    bool down = checkEnclosure(world, x, y + 1, visited);
+    bool left = checkEnclosure(world, x - 1, y, visited);
+    bool right = checkEnclosure(world, x + 1, y, visited);
+
+    return up && down && left && right;
+}
+
+bool isEnclosedByBeach(World* world, int x, int y) {
+    // Allocate a flat visited array
+    bool* visited = calloc(world->height * world->width, sizeof(bool));
+
+    bool result = checkEnclosure(world, x, y, visited);
+
+    free(visited); // Clean up the dynamically allocated memory
+
+    return result;
+}
+
+void initializeVisited(bool*** visited, int width, int height) {
+    *visited = malloc(height * sizeof(bool*));
+    for (int i = 0; i < height; i++) {
+        (*visited)[i] = calloc(width, sizeof(bool)); // Use calloc for automatic initialization to false
+    }
+}
+
+void cleanupVisited(bool*** visited, int height) {
+    for (int i = 0; i < height; i++) {
+        free((*visited)[i]);
+    }
+    free(*visited);
+}
+
+
+void floodFillSetLake(World* world, int x, int y, bool** visited) {
+    // Check bounds and whether the tile has already been visited or is not a potential lake tile
+    if (x < 0 || x >= world->width || y < 0 || y >= world->height || visited[y][x] || world->map[y][x].waterBody != TITLE_OCEAN) {
+        return;
+    }
+
+    // Set current tile to lake
+    world->map[y][x].waterBody = TITLE_LAKE;
+    visited[y][x] = true;
+
+    // Recursively fill adjacent tiles
+    floodFillSetLake(world, x + 1, y, visited);
+    floodFillSetLake(world, x - 1, y, visited);
+    floodFillSetLake(world, x, y + 1, visited);
+    floodFillSetLake(world, x, y - 1, visited);
+}
+
+void setLakeTiles(World* world, int x, int y) {
+    // Initialize a visited array
+    bool** visited = malloc(world->height * sizeof(bool*));
+    for (int i = 0; i < world->height; i++) {
+        visited[i] = malloc(world->width * sizeof(bool));
+        for (int j = 0; j < world->width; j++) {
+            visited[i][j] = false;
+        }
+    }
+
+    // Start the flood fill from the specified point
+    floodFillSetLake(world, x, y, visited);
+
+    // Cleanup
+    for (int i = 0; i < world->height; i++) {
+        free(visited[i]);
+    }
+    free(visited);
+}
+
+
+
+
+
+void assignMediumBiome(Tile* tile, float biomeNoise, float latFactor, float longFactor) {
+    // Example biome assignment based on noise and geographic factors
+    if (biomeNoise < 0.3) {
+        tile->terrain = (latFactor < 0.5) ? TITLE_FOREST : TITLE_SAVANNAH;
+    } else if (biomeNoise < 0.6) {
+        tile->terrain = (longFactor < 0.5) ? TITLE_GRASSLANDS : TITLE_JUNGLE;
     } else {
-        if (!isAdjacentToLand(world, x, y)) {
-            return TITLE_JUNGLE; // Jungles not directly next to water
-        } else {
-            return TITLE_GRASSLANDS; // Fallback to grasslands near water
-        }
+        tile->terrain = TITLE_DESERT;
     }
 }
 
-// Checks if a given water tile at (x, y) is adjacent to a land tile
-bool isAdjacentToLand(World* world, int x, int y) {
-    for (int i = -1; i <= 1; i++) {
-        for (int j = -1; j <= 1; j++) {
-            if (i == 0 && j == 0) continue; // Skip the center tile
-
-            int checkX = x + i;
-            int checkY = y + j;
-
-            // Ensure we're not checking out of bounds
-            if (checkX >= 0 && checkX < world->width && checkY >= 0 && checkY < world->height) {
-                // Check if the adjacent tile is not water
-                if (world->map[checkY][checkX].height > TITLE_LOW) {
-                    return true; // Adjacent land found
-                }
-            }
-        }
-    }
-    return false; // No adjacent land tiles found
+void assignHighBiome(Tile* tile, float biomeNoise, float latFactor) {
+    // Assign high altitude biomes, possibly influenced by latitude
+    tile->terrain = (latFactor < 0.5) ? TITLE_MOUNTAIN : TITLE_TUNDRA;
 }
+
+void assignLowBiome(Tile* tile, float biomeNoise) {
+    // Since very low regions and beaches are handled elsewhere, 
+    // this function will focus on assigning ocean to the remaining low regions.
+    // Future logic can be added here for more detailed biome assignments like rivers and lakes.
+
+    // Adjust biomeNoise thresholds if necessary to accommodate your game's biome distribution.
+    if       (biomeNoise < 0.7) {
+        tile->waterBody = TITLE_OCEAN; // Assign ocean to low regions
+    } else if(biomeNoise < 0.9) {
+        tile->terrain = TITLE_SWAMPLAND;
+    } else{
+        // Placeholder for future river or lake assignment logic
+        // For now, we'll mark these tiles with a default terrain to indicate they need further processing.
+        // This placeholder will be replaced with actual logic for rivers, lakes, or other specific biomes.
+        tile->terrain = TITLE_DEFAULT_TERRAIN; // Indicate these tiles need further biome assignment
+    }
+
+    // Note: The logic for rivers, lakes, and specific terrain types like swamps
+    // will be implemented in separate functions or steps in your world generation process.
+}
+
 
 void applySpecialFeatures(World* world) {
     // Flags to control the one-time features
@@ -163,7 +371,7 @@ void applySpecialFeatures(World* world) {
             Tile* tile = &world->map[y][x];
 
             // Example: Convert beaches on the north and south edges to special beaches
-            if (tile->terrain == TITLE_BEACH) {
+            if (tile->terrain == TITLE_BEACH && tile->height == TITLE_MEDIUM) {
                 if (y < 10) { // North edge for Bone Beach
                     tile->specialFeature = TITLE_BONE_BEACH;
                 } else if (world->height - y <= 10) { // South edge for Tropical Beach

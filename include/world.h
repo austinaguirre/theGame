@@ -107,8 +107,29 @@ bool world_can_move_to(const World* world, int x, int y);
 
 void generateHeightMap(World* world, float scale, unsigned int seed);
 void applyBiomesBasedOnHeightAndPosition(World* world);
-TerrainType determineMediumTerrain(World* world, int x, int y, int southThreshold);
-bool isAdjacentToLand(World* world, int x, int y);
+void assignMediumBiome(Tile* tile, float biomeNoise, float latFactor, float longFactor);
+void assignHighBiome(Tile* tile, float biomeNoise, float latFactor);
+void assignLowBiome(Tile* tile, float biomeNoise);
+void createBeaches(World* world);
+bool isPotentialBeachTile(World* world, int x, int y);
+
+
+void spawnRivers(World* world);
+bool canContinueRiver(World* world, int x, int y);
+void generateRiverPath(World* world, int x, int y);
+bool isValidRiverSource(World* world, int x, int y);
+
+
+void setLakeTiles(World* world, int x, int y);
+bool checkEnclosure(World* world, int x, int y, bool* visited);
+bool isEnclosedByBeach(World* world, int x, int y);
+bool isPotentialLakeTile(World* world, int x, int y);
+void detectAndSetLakes(World* world);
+void floodFillSetLake(World* world, int x, int y, bool** visited);
+void initializeVisited(bool*** visited, int width, int height);
+void cleanupVisited(bool*** visited, int height);
+
+
 void applySpecialFeatures(World* world);
 bool isInNorthernHalf(World* world, int y);
 void placeStructures(World* world);

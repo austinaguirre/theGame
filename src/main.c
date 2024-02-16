@@ -38,6 +38,7 @@ int main(int argc, char* argv[]) {
     int menuSelection = 0; // For handling menu selection
     SDL_Color textColor = {255, 255, 255, 255}; // Default text color
     float textScale = 1.0f; // Default text scale
+    bool mapView = false;
 
     while (running) {
         while (SDL_PollEvent(&event)) {
@@ -55,6 +56,8 @@ int main(int argc, char* argv[]) {
                 case GAMEPLAY:
                     if (event.key.keysym.sym == SDLK_ESCAPE && event.type == SDL_KEYDOWN) {
                         currentGameState = PAUSE; // Toggle pause state with ESC
+                    } else if (event.key.keysym.sym == SDLK_m && event.type == SDL_KEYDOWN) {
+                        mapView = !mapView; // Toggle map view
                     } else {
                         handle_input(&event, &running, &player, &world);
                     }
@@ -87,8 +90,15 @@ int main(int argc, char* argv[]) {
                 main_menu_render(renderer, menuSelection);
                 break;
             case GAMEPLAY:
-                world_render(&world, renderer, &camera); // Adjusted to pass the camera
-                player_render(&player, renderer, &camera); // Ensure player_render is adapted to consider the camera
+                if (mapView) {
+                    // Adjust scaleFactor as needed to fit the map on your screen
+                    float scaleFactor = 0.1f; // Example scale factor, adjust as needed
+                    renderMiniMap(renderer, &world, &player, scaleFactor);
+                } else {
+                    // Regular gameplay rendering
+                    world_render(&world, renderer, &camera);
+                    player_render(&player, renderer, &camera);
+                }
                 break;
             case PAUSE:
                 render_text(renderer, "paused", 100, 100, textColor, textScale); // Display pause message

@@ -1,3 +1,6 @@
+#define max(a, b) ((a) > (b) ? (a) : (b))
+#define min(a, b) ((a) < (b) ? (a) : (b))
+
 #ifndef CONFIG_H
 #define CONFIG_H
 

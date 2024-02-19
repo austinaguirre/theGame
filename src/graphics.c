@@ -5,6 +5,7 @@
 #include "world.h"
 #include "player.h"
 #include "camera.h"
+#include "ui.h"
 
 void graphics_init(SDL_Window** window, SDL_Renderer** renderer) {
     SDL_Init(SDL_INIT_VIDEO);
@@ -242,5 +243,11 @@ if (playerTileX >= 0 && playerTileX < world->width && playerTileY >= 0 && player
     SDL_RenderFillRect(renderer, &playerRect);
 }
 
+void renderUI(SDL_Renderer* renderer, UIButton* button) {
+    SDL_Rect rect = { button->x, button->y, button->width, button->height };
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Example color
+    SDL_RenderFillRect(renderer, &rect);
+    // Additional rendering logic here (e.g., for labels)
+}
 
 

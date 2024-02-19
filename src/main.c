@@ -9,6 +9,8 @@
 #include "text.h"
 #include "main_menu.h"
 #include "config.h"
+#include "ui.h"
+#include "inventory.h"
 
 int main(int argc, char* argv[]) {
     SDL_Window* window = NULL;
@@ -40,10 +42,18 @@ int main(int argc, char* argv[]) {
     float textScale = 1.0f; // Default text scale
     bool mapView = false;
 
+    UIButton buttonInventory = {0, 400, 50, 50, "Inventory"};
+
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 running = false;
+            }
+            // check ui clicks in not these places
+            if (currentGameState != MENU && currentGameState != PAUSE && currentGameState != GAME_OVER) {
+                if (checkButtonClick(&event, &buttonInventory)){
+                    currentGameState = INVENTORY;
+                }
             }
 
             // Handle input based on the current game state
@@ -54,18 +64,21 @@ int main(int argc, char* argv[]) {
                     main_menu_handle_keyboard_input(&event, &running, &currentGameState, &menuSelection);
                     break;
                 case GAMEPLAY:
-                    if (event.key.keysym.sym == SDLK_ESCAPE && event.type == SDL_KEYDOWN) {
-                        currentGameState = PAUSE; // Toggle pause state with ESC
-                    } else if (event.key.keysym.sym == SDLK_m && event.type == SDL_KEYDOWN) {
-                        mapView = !mapView; // Toggle map view
-                    } else {
-                        handle_input(&event, &running, &player, &world);
-                    }
+                    handle_gameplay_input(&event, &running, &player, &world, &currentGameState, &mapView);
                     break;
                 case PAUSE:
                     if (event.key.keysym.sym == SDLK_ESCAPE && event.type == SDL_KEYDOWN) {
                         currentGameState = GAMEPLAY; // Resume game from pause
                     }
+                    break;
+                case ENEMY_ENCOUNTER:
+
+                    break;
+                case CITY_INTERACTION:
+
+                    break;
+                case INVENTORY:
+
                     break;
                 case GAME_OVER:
                     if (event.key.keysym.sym == SDLK_RETURN) {
@@ -77,9 +90,9 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        if (currentGameState == GAMEPLAY) {
-            update_camera_position(&camera, &world, &player);
-        }
+        // if (currentGameState == GAMEPLAY) {
+        //     update_camera_position(&camera, &world, &player);
+        // }
 
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Set background color
         SDL_RenderClear(renderer); // Clear the screen with the background color
@@ -96,6 +109,7 @@ int main(int argc, char* argv[]) {
                     renderMiniMap(renderer, &world, &player, scaleFactor);
                 } else {
                     // Regular gameplay rendering
+                    update_camera_position(&camera, &world, &player);
                     world_render(&world, renderer, &camera);
                     player_render(&player, renderer, &camera);
                 }
@@ -103,9 +117,23 @@ int main(int argc, char* argv[]) {
             case PAUSE:
                 render_text(renderer, "paused", 100, 100, textColor, textScale); // Display pause message
                 break;
+            case ENEMY_ENCOUNTER:
+                render_text(renderer, "enemy", 100, 100, textColor, textScale); // Display pause message
+                break;
+            case CITY_INTERACTION:
+                render_text(renderer, "city", 100, 100, textColor, textScale); // Display pause message
+                break;
             case GAME_OVER:
                 render_text(renderer, "Game Over", 100, 100, textColor, textScale); // Display game over message
                 break;
+            case INVENTORY:
+                renderInventoryScreen(renderer, &player.inventory);
+            break;
+        }
+
+        // Render UI only in certain states
+        if (currentGameState != MENU && currentGameState != PAUSE && currentGameState != GAME_OVER) {
+            renderUI(renderer, &buttonInventory);
         }
 
         SDL_RenderPresent(renderer); // Update the screen with rendered content

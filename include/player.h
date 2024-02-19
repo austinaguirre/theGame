@@ -3,18 +3,21 @@
 #define PLAYER_H
 
 #include <SDL.h>
+#include "inventory.h"
 
 struct Camera; 
-struct World;
+// struct World;
 
 // Player structure
 typedef struct {
     int x, y; // Player position
     SDL_Texture* texture; // Player texture
+    PlayerInventory inventory;
 } Player;
 
 // Function declarations
 void player_init(Player* player, SDL_Renderer* renderer);
-void player_move(Player* player, int dx, int dy, const struct World* world);
+void player_init_inventory(Player* player);
+// void player_move(Player* player, int dx, int dy, const struct World* world);
 
 #endif

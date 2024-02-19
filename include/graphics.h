@@ -6,6 +6,7 @@
 #include "player.h"
 #include "world.h"
 #include "camera.h"
+#include "ui.h"
 
 // Initializes the SDL graphics subsystem and creates the window and renderer
 void graphics_init(SDL_Window** window, SDL_Renderer** renderer);
@@ -20,7 +21,10 @@ SDL_Color getColorForTile(TerrainType terrain, WaterBodyType waterBody, SpecialF
 void player_render(Player* player, SDL_Renderer* renderer, const Camera* camera);
 void world_render(const World* world, SDL_Renderer* renderer, const Camera* camera);
 void renderMiniMap(SDL_Renderer* renderer, World* world, Player* player, float scaleFactor);
-void printDebugInfo(const TileRenderCount* count) ;
+void printDebugInfo(const TileRenderCount* count);
+
+void renderUI(SDL_Renderer* renderer, UIButton* button);
+
 
 
 #endif

@@ -881,21 +881,21 @@ void placeStructures(World* world) {
     srand(time(NULL));
 
     // Place each structure based on its specific conditions
-    placeStructure(world, TITLE_SHIP_WRECK, TITLE_BEACH, "north");
-    placeStructure(world, TITLE_FARMLAND, TITLE_GRASSLANDS, "center");
-    placeStructure(world, TITLE_CAVE, TITLE_MOUNTAIN, "center");
-    placeStructure(world, TITLE_ANCIENT_RUINS, TITLE_DESERT, "south");
-    placeStructure(world, TITLE_DOCK, TITLE_BEACH, "east");
-    placeStructure(world, TITLE_CITY_YANGSE, TITLE_GRASSLANDS, "northeast");
-    placeStructure(world, TITLE_CITY_RAMONDULL, TITLE_GRASSLANDS, "northwest");
-    placeStructure(world, TITLE_CITY_MYKE, TITLE_GRASSLANDS, "southwest");
-    placeStructure(world, TITLE_CITY_DORPORT, TITLE_GRASSLANDS, "southeast");
-    placeStructure(world, TITLE_ORC_CAMP, TITLE_GRASSLANDS, "center");
-    placeStructure(world, TITLE_ORC_CASTLE, TITLE_TUNDRA, "any");
-    placeStructure(world, TITLE_ELF_HIDEOUT, TITLE_JUNGLE, "any");
+    placeStructure(world, TITLE_SHIP_WRECK, TITLE_BEACH, "north", false);
+    placeStructure(world, TITLE_FARMLAND, TITLE_GRASSLANDS, "center", false);
+    placeStructure(world, TITLE_CAVE, TITLE_MOUNTAIN, "center", false);
+    placeStructure(world, TITLE_ANCIENT_RUINS, TITLE_DESERT, "south", false);
+    placeStructure(world, TITLE_DOCK, TITLE_BEACH, "east", false);
+    placeStructure(world, TITLE_CITY_YANGSE, TITLE_GRASSLANDS, "northeast", true);
+    placeStructure(world, TITLE_CITY_RAMONDULL, TITLE_GRASSLANDS, "northwest", true);
+    placeStructure(world, TITLE_CITY_MYKE, TITLE_GRASSLANDS, "southwest", true);
+    placeStructure(world, TITLE_CITY_DORPORT, TITLE_GRASSLANDS, "southeast", true);
+    placeStructure(world, TITLE_ORC_CAMP, TITLE_GRASSLANDS, "center", false);
+    placeStructure(world, TITLE_ORC_CASTLE, TITLE_TUNDRA, "any", false);
+    placeStructure(world, TITLE_ELF_HIDEOUT, TITLE_JUNGLE, "any", false);
 }
 
-void placeStructure(World* world, StructureType structure, TerrainType preferredTerrain, const char* location) {
+void placeStructure(World* world, StructureType structure, TerrainType preferredTerrain, const char* location, bool isCity) {
     bool placed = false;
     int attempts = 0;
     int maxAttempts = 1000; // Prevent infinite loops
@@ -906,6 +906,9 @@ void placeStructure(World* world, StructureType structure, TerrainType preferred
 
         // Check if the selected location meets the criteria
         if (isValidLocationForStructure(world, x, y, preferredTerrain, location)) {
+            if (isCity){
+                world->map[y][x].interactionType = INTERACTION_CITY;
+            }
             world->map[y][x].structure = structure;
             placed = true;
         }
@@ -967,6 +970,7 @@ void world_init(World* world, int width, int height, unsigned int seed) {
             world->map[y][x].waterBody = TITLE_DEFAULT_WATER; // Default to ocean, will be refined
             world->map[y][x].specialFeature = TITLE_DEFAULT_SPECIAL; // Default, will be updated
             world->map[y][x].structure = TITLE_DEFAULT_STRUCTURE; // Default, no structure
+            world->map[y][x].interactionType = INTERACTION_COMBAT;
         }
     }
 

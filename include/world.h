@@ -78,12 +78,18 @@ typedef enum{
     TITLE_DEFAULT_STRUCTURE
 } StructureType;
 
+typedef enum {
+    INTERACTION_CITY,
+    INTERACTION_COMBAT
+} InteractionType;
+
 typedef struct {
     TerrainHeight height;
     TerrainType terrain;
     WaterBodyType waterBody;
     StructureType structure;
     SpecialFeatureType specialFeature;
+    InteractionType interactionType;
 } Tile;
 
 // World structure
@@ -161,7 +167,7 @@ void placeSmoothGrasslandsGreenHills(World* world);
 
 bool isInNorthernHalf(World* world, int y);
 void placeStructures(World* world);
-void placeStructure(World* world, StructureType structure, TerrainType preferredTerrain, const char* location);
+void placeStructure(World* world, StructureType structure, TerrainType preferredTerrain, const char* location, bool isCity);
 bool isValidLocationForStructure(World* world, int x, int y, TerrainType preferredTerrain, const char* location);
 
 #endif

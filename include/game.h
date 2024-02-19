@@ -7,7 +7,10 @@ typedef enum GameState {
     MENU,
     GAMEPLAY,
     PAUSE,
-    GAME_OVER
+    GAME_OVER,
+    ENEMY_ENCOUNTER,
+    CITY_INTERACTION,
+    INVENTORY
 } GameState;
 
 #endif

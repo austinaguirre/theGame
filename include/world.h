@@ -107,8 +107,8 @@ bool world_can_move_to(const World* world, int x, int y);
 
 void generateHeightMap(World* world, float scale, unsigned int seed);
 void applyBiomesBasedOnHeightAndPosition(World* world);
-void assignMediumBiome(Tile* tile, float biomeNoise, float latFactor, float longFactor);
-void assignHighBiome(Tile* tile, float biomeNoise, float latFactor);
+void assignMediumBiome(Tile* tile, int x, int y, int width, int height);
+void assignHighBiome(Tile* tile, float latFactor, int x, int y);
 void assignLowBiome(Tile* tile, float biomeNoise);
 void createBeaches(World* world);
 bool isPotentialBeachTile(World* world, int x, int y);
@@ -131,6 +131,34 @@ void cleanupVisited(bool*** visited, int height);
 
 
 void applySpecialFeatures(World* world);
+
+void placeSpecialBeaches(World* world);
+void createSpecialBeachStretch(World* world, bool isNorth, int minLength, int maxLength, SpecialFeatureType specialBeachType);
+
+void placeSubBiomes(World* world);
+bool isIsolatedWaterTile(World* world, int x, int y);
+
+void placeDeepOceanTrenches(World* world);
+
+void placeCoralReefs(World* world);
+void spreadCoralReef(World* world, int x, int y);
+void setTileAsCoralReef(World* world, int x, int y);
+bool isNearCoast(World* world, int x, int y);
+
+
+void placeCrystalCaves(World* world);
+void placeIcyTundraPeaks(World* world);
+
+void placeSulfuricSprings(World* world);
+bool isNearVolcanicLands(World* world, int x, int y);
+
+void placeForestSubBiomes(World* world);
+
+void placeCanyons(World* world);
+void createCanyon(World* world, int startX, int startY);
+
+void placeSmoothGrasslandsGreenHills(World* world);
+
 bool isInNorthernHalf(World* world, int y);
 void placeStructures(World* world);
 void placeStructure(World* world, StructureType structure, TerrainType preferredTerrain, const char* location);

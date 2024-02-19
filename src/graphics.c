@@ -51,7 +51,7 @@ SDL_Color getColorForTile(TerrainType terrain, WaterBodyType waterBody, SpecialF
         case TITLE_TUNDRA: c.r = 176; c.g = 224; c.b = 230; c.a = 255; break; // Powder Blue for tundra
         case TITLE_GRASSLANDS: c.r = 124; c.g = 252; c.b = 0; c.a = 255; break; // Lawn Green for grasslands
         case TITLE_SWAMPLAND: c.r = 47; c.g = 79; c.b = 79; c.a = 255; break; // Dark Slate Grey for swampland
-        case TITLE_DEAD_LANDS: c.r = 105; c.g = 105; c.b = 105; c.a = 255; break; // Dim Grey for dead lands
+        case TITLE_DEAD_LANDS: c.r = 170; c.g = 170; c.b = 170; c.a = 255; break; // Dim Grey for dead lands
         case TITLE_FOREST: c.r = 34; c.g = 139; c.b = 34; c.a = 255; break; // Forest Green for forest
         case TITLE_SPIDERLANDS: c.r = 30; c.g = 30; c.b = 30; c.a = 255; break; // Near Black for spiderlands
         case TITLE_MOUNTAIN: c.r = 139; c.g = 137; c.b = 137; c.a = 255; break; // Grey for mountain
@@ -78,14 +78,14 @@ SDL_Color getColorForTile(TerrainType terrain, WaterBodyType waterBody, SpecialF
 
     // Switch for special features
     switch (specialFeature) {
-        case TITLE_BONE_BEACH: c.r = 227; c.g = 218; c.b = 201; c.a = 255; break; // Light gray for Bone Beach
-        case TITLE_TROPICAL_BEACH: c.r = 250; c.g = 235; c.b = 215; c.a = 255; break; // Antique White for Tropical Beach
+        case TITLE_BONE_BEACH: c.r = 237; c.g = 228; c.b = 211; c.a = 255; break; // Light gray for Bone Beach
+        case TITLE_TROPICAL_BEACH: c.r = 201; c.g = 235; c.b = 195; c.a = 255; break; // some green ish i chose 201, 235, 195
         case TITLE_SNOWY_MOUNTAIN: c.r = 255; c.g = 250; c.b = 250; c.a = 255; break; // Snow for Snowy Mountain
-        case TITLE_DEEP_OCEAN_TRENCH: c.r = 25; c.g = 25; c.b = 112; c.a = 255; break; // Midnight Blue for Deep Ocean Trench
+        case TITLE_DEEP_OCEAN_TRENCH: c.r = 0; c.g = 0; c.b = 0; c.a = 255; break; // Midnight Blue for Deep Ocean Trench
         case TITLE_CORAL_REEF: c.r = 255; c.g = 127; c.b = 80; c.a = 255; break; // Coral color for Coral Reef
         case TITLE_CRYSTAL_CAVE: c.r = 135; c.g = 206; c.b = 250; c.a = 255; break; // Light Sky Blue for Crystal Cave
         case TITLE_PARADISE_ISLES: c.r = 64; c.g = 224; c.b = 208; c.a = 255; break; // Turquoise for Paradise Isles
-        case TITLE_ICY_TUNDRA: c.r = 176; c.g = 224; c.b = 230; c.a = 255; break; // Powder Blue for Icy Tundra
+        case TITLE_ICY_TUNDRA: c.r = 65; c.g = 255; c.b = 245; c.a = 255; break; // Powder Blue for Icy Tundra
         case TITLE_SULFURIC_SPRINGS: c.r = 154; c.g = 205; c.b = 50; c.a = 255; break; // Yellow Green for Sulfuric Springs
         case TITLE_CRYSTAL_FOREST: c.r = 72; c.g = 61; c.b = 139; c.a = 255; break; // Dark Slate Blue for Crystal Forest
         case TITLE_BAMBOO_FOREST: c.r = 107; c.g = 142; c.b = 35; c.a = 255; break; // Olive Drab for Bamboo Forest
@@ -94,7 +94,7 @@ SDL_Color getColorForTile(TerrainType terrain, WaterBodyType waterBody, SpecialF
         case TITLE_REDWOOD_FOREST: c.r = 165; c.g = 42; c.b = 42; c.a = 255; break; // Brown for Redwood Forest
         case TITLE_BLOSSOM_FOREST: c.r = 255; c.g = 182; c.b = 193; c.a = 255; break; // Light Pink for Blossom Forest
         case TITLE_CANYON: c.r = 124; c.g = 252; c.b = 0; c.a = 255; break; // Chocolate for Canyon
-        case TITLE_SMOOTH_GRASSLANDS_GREEN_HILLS: c.r = 124; c.g = 252; c.b = 0; c.a = 255; break; // Lawn Green for Smooth Grasslands
+        case TITLE_SMOOTH_GRASSLANDS_GREEN_HILLS: c.r = 16; c.g = 252; c.b = 0; c.a = 255; break; // Lawn Green for Smooth Grasslands
         case TITLE_ACTIVE_VOLCANIC_LANDS: c.r = 178; c.g = 34; c.b = 34; c.a = 255; break; // Firebrick for Active Volcanic Lands
         case TITLE_DEFAULT_SPECIAL: break; // No change for default special feature to allow terrain or water body color
         default: break; // No override if not a recognized special feature type

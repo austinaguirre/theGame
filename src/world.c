@@ -7,6 +7,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include "perlin_noise.h"
+#include "config.h"
 
 
 void generateHeightMap(World* world, float scale, unsigned int seed) {
@@ -71,9 +72,9 @@ void applyBiomesBasedOnHeightAndPosition(World* world) {
             // Optional: float moistureNoise = perlin(x * moistureScale, y * moistureScale);
 
             if (world->map[y][x].height == TITLE_MEDIUM) {
-                assignMediumBiome(&world->map[y][x], biomeNoise, latFactor, longFactor);
+                assignMediumBiome(&world->map[y][x], x, y, world->width, world->height);
             } else if (world->map[y][x].height == TITLE_HIGH || world->map[y][x].height == TITLE_VERY_HIGH) {
-                assignHighBiome(&world->map[y][x], biomeNoise, latFactor);
+                assignHighBiome(&world->map[y][x], latFactor, x, y);
             } else if (world->map[y][x].height == TITLE_LOW) {
                 assignLowBiome(&world->map[y][x], biomeNoise);
             } else if(world->map[y][x].height == TITLE_VERY_LOW){
@@ -318,24 +319,107 @@ void setLakeTiles(World* world, int x, int y) {
 }
 
 
+void assignMediumBiome(Tile* tile, int x, int y, int width, int height) {
+    float biomeNoiseScale = 0.05; // Scale for biome type noise
+    float transitionNoiseScale = 0.1; // Scale for the transition modulation noise
 
+    // Calculate distance from the center
+    float centerX = width / 2.0;
+    float centerY = height / 2.0;
+    float distX = x - centerX;
+    float distY = y - centerY;
+    float distanceFromCenter = sqrt(distX * distX + distY * distY);
+    float maxDistanceFromCenter = sqrt(centerX * centerX + centerY * centerY);
+    float normalizedDistance = distanceFromCenter / maxDistanceFromCenter;
 
+    // Generate biome and transition noises
+    float biomeNoise = perlin(x * biomeNoiseScale, y * biomeNoiseScale);
+    float transitionNoise = perlin(x * transitionNoiseScale, y * transitionNoiseScale);
 
-void assignMediumBiome(Tile* tile, float biomeNoise, float latFactor, float longFactor) {
-    // Example biome assignment based on noise and geographic factors
-    if (biomeNoise < 0.3) {
-        tile->terrain = (latFactor < 0.5) ? TITLE_FOREST : TITLE_SAVANNAH;
-    } else if (biomeNoise < 0.6) {
-        tile->terrain = (longFactor < 0.5) ? TITLE_GRASSLANDS : TITLE_JUNGLE;
+    // Apply transition noise to the distance factor for organic transitions
+    normalizedDistance += (transitionNoise - 0.5) * 0.2;
+
+    // Biome selection based on distance and noise
+    if (normalizedDistance < 0.2) {
+        // Central areas: mostly forests and grasslands
+        tile->terrain = (biomeNoise < 0.3) ? TITLE_FOREST : TITLE_GRASSLANDS;
+    } else if (normalizedDistance < 0.6) {
+        // Intermediate areas: mix in savannahs and jungles
+        if (biomeNoise < 0.2) {
+            tile->terrain = TITLE_GRASSLANDS;
+        } else if (biomeNoise < 0.6) {
+            tile->terrain = TITLE_FOREST;
+        } else if (biomeNoise < 0.7) {
+            tile->terrain = TITLE_SAVANNAH;
+        } else {
+            tile->terrain = TITLE_JUNGLE;
+        }
     } else {
-        tile->terrain = TITLE_DESERT;
+        // Outer areas: introduce unique and harsher biomes
+        if (biomeNoise < 0.5) {
+            tile->terrain = TITLE_SPIDERLANDS;
+        } else if (biomeNoise < 0.6) {
+            tile->terrain = TITLE_DESERT;
+        } else if (biomeNoise < 0.8) {
+            tile->terrain = TITLE_SCORCHED_LANDS;
+        } else if (biomeNoise < 0.9) {
+            tile->terrain = TITLE_DEAD_LANDS;
+        } else {
+            tile->terrain = TITLE_JUNGLE;
+        }
     }
 }
 
-void assignHighBiome(Tile* tile, float biomeNoise, float latFactor) {
-    // Assign high altitude biomes, possibly influenced by latitude
-    tile->terrain = (latFactor < 0.5) ? TITLE_MOUNTAIN : TITLE_TUNDRA;
+
+
+
+
+
+void assignHighBiome(Tile* tile, float latFactor, int x, int y) {
+    float primaryNoiseScale = 0.05; // Scale for the primary mountain biome noise
+    float subBiomeNoiseScale = 0.1; // Scale for the sub-biome transition noise
+    float transitionNoiseScale = 0.08; // Scale for the transition modulation noise
+    
+    // Generate primary Perlin noise for mountain biome
+    float primaryNoise = perlin(x * primaryNoiseScale, y * primaryNoiseScale);
+    
+    // Generate secondary Perlin noise for sub-biome transitions
+    float subBiomeNoise = perlin(x * subBiomeNoiseScale, y * subBiomeNoiseScale);
+
+    // Generate transition modulation noise
+    float transitionNoise = perlin(x * transitionNoiseScale, y * transitionNoiseScale);
+
+    // Define noise threshold for mountain biome
+    const float mountainThreshold = 0.4;
+
+    // Define sub-biome transition thresholds
+    const float subBiomeTransitionThreshold = 0.55;
+
+    // Modulate the latitude factor with transition noise to create natural transitions
+    float modulatedLatFactor = latFactor + (transitionNoise - 0.5) * 0.25; // Adjust modulation strength with * 0.25
+
+    // Check if the tile qualifies as mountain biome based on primary noise
+    if (primaryNoise < mountainThreshold) {
+        tile->terrain = TITLE_MOUNTAIN;
+    } else {
+        // Further determine sub-biome based on secondary noise and modulated latitude
+        if (subBiomeNoise > subBiomeTransitionThreshold) {
+            if (modulatedLatFactor < 0.4) {
+                // Northern half favors tundra sub-biome with natural transition
+                tile->terrain = TITLE_TUNDRA;
+            } else {
+                // Southern half favors volcanic lands sub-biome with natural transition
+                tile->terrain = TITLE_VOLCANIC_LANDS;
+            }
+        } else {
+            // Default to mountain if not within the sub-biome transition area
+            tile->terrain = TITLE_MOUNTAIN;
+        }
+    }
 }
+
+
+
 
 void assignLowBiome(Tile* tile, float biomeNoise) {
     // Since very low regions and beaches are handled elsewhere, 
@@ -343,14 +427,11 @@ void assignLowBiome(Tile* tile, float biomeNoise) {
     // Future logic can be added here for more detailed biome assignments like rivers and lakes.
 
     // Adjust biomeNoise thresholds if necessary to accommodate your game's biome distribution.
-    if       (biomeNoise < 0.7) {
+    if (biomeNoise < 0.7) {
         tile->waterBody = TITLE_OCEAN; // Assign ocean to low regions
     } else if(biomeNoise < 0.9) {
         tile->terrain = TITLE_SWAMPLAND;
     } else{
-        // Placeholder for future river or lake assignment logic
-        // For now, we'll mark these tiles with a default terrain to indicate they need further processing.
-        // This placeholder will be replaced with actual logic for rivers, lakes, or other specific biomes.
         tile->terrain = TITLE_DEFAULT_TERRAIN; // Indicate these tiles need further biome assignment
     }
 
@@ -360,59 +441,435 @@ void assignLowBiome(Tile* tile, float biomeNoise) {
 
 
 void applySpecialFeatures(World* world) {
-    // Flags to control the one-time features
-    bool icyTundraPlaced = false;
-    int snowyMountainCount = 0;
-    int deepOceanTrenchCount = 0;
+    // Helper functions to determine placement eligibility
+    // These would encapsulate logic specific to each feature's requirements
+    placeSpecialBeaches(world);
+    placeSubBiomes(world);
+    placeDeepOceanTrenches(world);
+    placeCoralReefs(world);
+    placeCrystalCaves(world);
+    placeIcyTundraPeaks(world);
+    placeSulfuricSprings(world);
+    placeForestSubBiomes(world); // For Crystal, Bamboo, Ironwood, Fungi, Redwood, Blossom Forests
+    placeCanyons(world);
+    placeSmoothGrasslandsGreenHills(world);
+}
 
-    // Iterate through the map to apply special features
+void placeSpecialBeaches(World* world) {
+    // Define the length range for special beach stretches
+    int minStretchLength = 20;
+    int maxStretchLength = 40;
+
+    // Western special beach
+    createSpecialBeachStretch(world, true, minStretchLength, maxStretchLength, TITLE_BONE_BEACH);
+
+    // Eastern special beach
+    createSpecialBeachStretch(world, false, minStretchLength, maxStretchLength, TITLE_TROPICAL_BEACH);
+}
+
+void createSpecialBeachStretch(World* world, bool isWest, int minLength, int maxLength, SpecialFeatureType specialBeachType) {
+    int stretchLength = rand() % (maxLength - minLength + 1) + minLength; // Random stretch length within range
+    int startX = isWest ? 0 : world->width - stretchLength; // Starting X based on west or east
+    int foundBeaches = 0;
+
+    // Iterate over a section of the map to convert a stretch of beach
+    for (int x = startX; (isWest && x < startX + stretchLength) || (!isWest && x > startX - stretchLength); isWest ? x++ : x--) {
+        for (int y = 0; y < world->height; y++) {
+            if (world->map[y][x].terrain == TITLE_BEACH) {
+                world->map[y][x].specialFeature = specialBeachType; // Mark as special beach
+                foundBeaches++;
+                if (foundBeaches >= stretchLength) {
+                    return; // Exit once we've converted enough beach tiles
+                }
+            }
+        }
+    }
+}
+
+
+void placeSubBiomes(World* world) {
+    // Adjust the scale of noise to control the granularity of sub-biome distribution
+    float noiseScale = 0.05; // Smaller values for broader, more gradual changes; larger for finer, more abrupt changes
+
     for (int y = 0; y < world->height; y++) {
         for (int x = 0; x < world->width; x++) {
             Tile* tile = &world->map[y][x];
+            float noiseValue = perlin(x * noiseScale, y * noiseScale);
 
-            // Example: Convert beaches on the north and south edges to special beaches
-            if (tile->terrain == TITLE_BEACH && tile->height == TITLE_MEDIUM) {
-                if (y < 10) { // North edge for Bone Beach
-                    tile->specialFeature = TITLE_BONE_BEACH;
-                } else if (world->height - y <= 10) { // South edge for Tropical Beach
-                    tile->specialFeature = TITLE_TROPICAL_BEACH;
+            if (tile->terrain == TITLE_VOLCANIC_LANDS){
+                if (noiseValue > 0.9){
+                    tile->specialFeature = TITLE_ACTIVE_VOLCANIC_LANDS;
                 }
             }
 
-            // Example: Apply special forest types based on location and existing forest terrain
-            if (tile->terrain == TITLE_FOREST) {
-                if (rand() % 100 < 10) { // 10% chance to convert a forest tile to a special forest
-                    // Assuming functions to check north/south position
-                    if (isInNorthernHalf(world, y)) {
-                        tile->specialFeature = TITLE_REDWOOD_FOREST;
-                    } else {
-                        tile->specialFeature = TITLE_BLOSSOM_FOREST;
-                    }
+            if (tile->terrain == TITLE_MOUNTAIN && tile->height == TITLE_VERY_HIGH) {
+                if (isInNorthernHalf(world, y) && noiseValue > 0.7) { // Only a fraction becomes Snowy Mountains
+                    tile->specialFeature = TITLE_SNOWY_MOUNTAIN;
                 }
             }
 
-            // Place Snowy Mountains (only 2 allowed)
-            if (snowyMountainCount < 2 && tile->terrain == TITLE_MOUNTAIN && tile->height == TITLE_VERY_HIGH) {
-                tile->specialFeature = TITLE_SNOWY_MOUNTAIN;
-                snowyMountainCount++;
+            // Introduce randomness in the placement of Paradise Isles
+            if (tile->waterBody == TITLE_OCEAN && isIsolatedWaterTile(world, x, y) && noiseValue - 0.03 > 0.55) { // A smaller fraction becomes Paradise Isles
+                tile->specialFeature = TITLE_PARADISE_ISLES;
             }
 
-            // Deep Ocean Trench within Deep Ocean
-            if (deepOceanTrenchCount < 3 && tile->waterBody == TITLE_DEEP_OCEAN) {
-                // Additional logic to ensure it forms a line and it's rare
-                if (rand() % 1000 < 5) { // Very rare
-                    tile->specialFeature = TITLE_DEEP_OCEAN_TRENCH;
-                    deepOceanTrenchCount++;
-                }
+            // Implement similar logic for other sub-biomes with noise to control their distribution
+        }
+    }
+}
+
+
+bool isIsolatedWaterTile(World* world, int x, int y) {
+    if (!(world->map[y][x].waterBody == TITLE_OCEAN || world->map[y][x].waterBody == TITLE_DEEP_OCEAN)) {
+        return false; // The tile is not a water tile, so it cannot be isolated
+    }
+
+    int adjacentNonWaterCount = 0;
+    // Examine a 3x3 grid centered on the tile
+    for (int offsetY = -5; offsetY <= 5; offsetY++) {
+        for (int offsetX = -5; offsetX <= 5; offsetX++) {
+            // Skip the center tile (the water tile itself)
+            if (offsetX == 0 && offsetY == 0) continue;
+
+            int adjacentX = x + offsetX;
+            int adjacentY = y + offsetY;
+
+            // Check map boundaries
+            if (adjacentX < 0 || adjacentX >= world->width || adjacentY < 0 || adjacentY >= world->height) {
+                continue; // Skip checking outside the map bounds
             }
 
-            // Other special features follow similar logic, with conditions based on their unique requirements
-            // Some features may require scanning neighboring tiles or checking global conditions
+            // Count adjacent tiles that are not water
+            if (world->map[adjacentY][adjacentX].waterBody != TITLE_OCEAN && world->map[adjacentY][adjacentX].waterBody != TITLE_DEEP_OCEAN) {
+                adjacentNonWaterCount++;
+            }
         }
     }
 
-    // Additional passes for features requiring more complex conditions, such as adjacency or count checks
+    // Define "isolated" based on the number of adjacent non-water tiles. Adjust the threshold as needed.
+    return adjacentNonWaterCount < 1;
 }
+
+void placeDeepOceanTrenches(World* world) {
+    // Parameters for trench placement
+    int maxTrenches = 5; // Maximum number of trenches
+    int trenchLength = 5; // Length of each trench
+    int attempts = 100; // Attempts to place a trench
+
+    int trenchCount = 0;
+
+    while (trenchCount < maxTrenches && attempts > 0) {
+        int startX = rand() % world->width;
+        int startY = rand() % world->height;
+
+        // Ensure starting point is in very deep ocean
+        if (world->map[startY][startX].waterBody == TITLE_DEEP_OCEAN) {
+            // Decide a direction for the trench to extend: 0=right, 1=down, 2=left, 3=up
+            int direction = rand() % 4;
+            bool canPlaceTrench = true;
+
+            // Check if the trench can be placed without interruption
+            for (int step = 0; step < trenchLength; step++) {
+                int currentX = startX, currentY = startY;
+
+                // Adjust current position based on direction
+                switch (direction) {
+                    case 0: currentX += step; break;
+                    case 1: currentY += step; break;
+                    case 2: currentX -= step; break;
+                    case 3: currentY -= step; break;
+                }
+
+                // Check bounds and water body type
+                if (currentX < 0 || currentX >= world->width || currentY < 0 || currentY >= world->height ||
+                    world->map[currentY][currentX].waterBody != TITLE_DEEP_OCEAN) {
+                    canPlaceTrench = false;
+                    break;
+                }
+            }
+
+            // Place the trench if possible
+            if (canPlaceTrench) {
+                for (int step = 0; step < trenchLength; step++) {
+                    int currentX = startX, currentY = startY;
+
+                    switch (direction) {
+                        case 0: currentX += step; break;
+                        case 1: currentY += step; break;
+                        case 2: currentX -= step; break;
+                        case 3: currentY -= step; break;
+                    }
+
+                    // Mark the tile as part of a deep ocean trench
+                    world->map[currentY][currentX].specialFeature = TITLE_DEEP_OCEAN_TRENCH;
+                }
+                trenchCount++;
+            }
+        }
+
+        attempts--;
+    }
+}
+
+
+void placeCoralReefs(World* world) {
+    int coralReefCount = 0; // Track the number of coral reefs placed
+    int maxCoralReefs = 10; // Maximum number of coral reefs you want in the world
+
+    for (int attempt = 0; attempt < 1000 && coralReefCount < maxCoralReefs; attempt++) {
+        // Randomly select a tile
+        int x = rand() % world->width;
+        int y = rand() % world->height;
+
+        // Check if the selected tile is suitable for a coral reef
+        if (world->map[y][x].waterBody == TITLE_OCEAN && isNearCoast(world, x, y)) {
+            // Place a coral reef in this tile and adjacent tiles to form a small blob
+            setTileAsCoralReef(world, x, y);
+            coralReefCount++;
+
+            // Optionally, spread to adjacent tiles to form a small blob
+            spreadCoralReef(world, x, y);
+        }
+    }
+}
+
+bool isNearCoast(World* world, int x, int y) {
+    // Check tiles around the selected point to find if it's near the coast
+    for (int offsetY = -3; offsetY <= 3; offsetY++) {
+        for (int offsetX = -3; offsetX <= 3; offsetX++) {
+            int checkX = x + offsetX;
+            int checkY = y + offsetY;
+
+            // Ensure we're not checking outside the map boundaries
+            if (checkX >= 0 && checkX < world->width && checkY >= 0 && checkY < world->height) {
+                // Check if the adjacent tile is a beach
+                if (world->map[checkY][checkX].terrain == TITLE_BEACH) {
+                    return true; // The tile is near the coast
+                }
+            }
+        }
+    }
+    return false; // Not near the coast
+}
+
+void setTileAsCoralReef(World* world, int x, int y) {
+    world->map[y][x].specialFeature = TITLE_CORAL_REEF;
+}
+
+void spreadCoralReef(World* world, int x, int y) {
+    // Spread the coral reef to a small number of adjacent ocean tiles
+    for (int offsetY = -1; offsetY <= 1; offsetY++) {
+        for (int offsetX = -1; offsetX <= 1; offsetX++) {
+            if (offsetX == 0 && offsetY == 0) continue; // Skip the original tile
+
+            int adjacentX = x + offsetX;
+            int adjacentY = y + offsetY;
+
+            // Check bounds and ensure it's an ocean tile
+            if (adjacentX >= 0 && adjacentX < world->width && adjacentY >= 0 && adjacentY < world->height &&
+                world->map[adjacentY][adjacentX].waterBody == TITLE_OCEAN) {
+                // Randomly decide to spread to this tile
+                if (rand() % 2) {
+                    setTileAsCoralReef(world, adjacentX, adjacentY);
+                }
+            }
+        }
+    }
+}
+
+
+void placeCrystalCaves(World* world) {
+    int crystalCaveCount = 0; // Track the number of crystal caves placed
+    int maxCrystalCaves = 5; // Maximum number of crystal caves you want in the world
+
+    for (int y = 0; y < world->height; y++) {
+        for (int x = 0; x < world->width; x++) {
+            // Check if the current tile is a mountain
+            if (world->map[y][x].terrain == TITLE_MOUNTAIN) {
+                // Apply a random chance to convert this mountain tile into a Crystal Cave
+                if (rand() % 100 < 5) { // 5% chance to convert a mountain tile into a Crystal Cave
+                    world->map[y][x].specialFeature = TITLE_CRYSTAL_CAVE;
+                    crystalCaveCount++;
+
+                    if (crystalCaveCount >= maxCrystalCaves) {
+                        return; // Stop searching if we've reached the maximum number of Crystal Caves
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+void placeIcyTundraPeaks(World* world) {
+    for (int y = 0; y < world->height; y++) {
+        for (int x = 0; x < world->width; x++) {
+            // Check if the current tile is part of a Tundra biome
+            if (world->map[y][x].terrain == TITLE_TUNDRA) {
+                // Use Perlin noise to add variation and select peaks
+                float noiseValue = perlin(x * 0.05, y * 0.05); // Adjust scale for desired granularity
+
+                // Determine if the current tundra tile should be converted into an Icy Tundra Peak
+                if (noiseValue > 0.7) { // Adjust threshold for frequency of icy peaks
+                    world->map[y][x].specialFeature = TITLE_ICY_TUNDRA;
+                }
+            }
+        }
+    }
+}
+
+
+void placeSulfuricSprings(World* world) {
+    for (int y = 0; y < world->height; y++) {
+        for (int x = 0; x < world->width; x++) {
+            // Check if the current tile is a lake
+            if (world->map[y][x].waterBody == TITLE_LAKE) {
+                // Check proximity to Volcanic Lands
+                if (isNearVolcanicLands(world, x, y)) {
+                    // Use a random chance to convert some lakes near Volcanic Lands into Sulfuric Springs
+                    if (rand() % 100 < 80) { // 10% chance to convert
+                        world->map[y][x].specialFeature = TITLE_SULFURIC_SPRINGS;
+                    }
+                }
+            }
+        }
+    }
+}
+
+bool isNearVolcanicLands(World* world, int x, int y) {
+    // Check the surrounding tiles for volcanic lands
+    for (int offsetY = -10; offsetY <= 10; offsetY++) {
+        for (int offsetX = -10; offsetX <= 10; offsetX++) {
+            int checkX = x + offsetX;
+            int checkY = y + offsetY;
+            // Ensure we're not checking outside the map boundaries
+            if (checkX >= 0 && checkX < world->width && checkY >= 0 && checkY < world->height) {
+                if (world->map[checkY][checkX].terrain == TITLE_SCORCHED_LANDS) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+void placeForestSubBiomes(World* world) {
+    const int clusterRadius = 20; // Max radius for sub-biome clusters
+    const float noiseThreshold = 0.5; // Noise threshold for cluster expansion
+
+    // Array of sub-biome types to iterate over
+    int subBiomeTypes[] = {
+        TITLE_CRYSTAL_FOREST,
+        TITLE_BAMBOO_FOREST,
+        TITLE_IRONWOOD_FOREST,
+        TITLE_FUNGI_FOREST,
+        TITLE_REDWOOD_FOREST,
+        TITLE_BLOSSOM_FOREST
+    };
+    int subBiomeCount = sizeof(subBiomeTypes) / sizeof(subBiomeTypes[0]);
+
+    // Iterate over each sub-biome type
+    for (int i = 0; i < subBiomeCount; i++) {
+        int subBiomeType = subBiomeTypes[i];
+
+        // Attempt to place a few clusters for each sub-biome type
+        for (int cluster = 0; cluster < 3; cluster++) { // Try to place 3 clusters per sub-biome
+            int centerX = rand() % world->width;
+            int centerY = rand() % world->height;
+
+            while (world->map[centerY][centerX].terrain != TITLE_FOREST){
+                centerX = rand() % world->width;
+                centerY = rand() % world->height;
+            }
+            // Ensure the center point is within a forest
+            if (world->map[centerY][centerX].terrain != TITLE_FOREST) continue;
+
+            // Spread the sub-biome around the center point
+            for (int y = centerY - clusterRadius; y <= centerY + clusterRadius; y++) {
+                for (int x = centerX - clusterRadius; x <= centerX + clusterRadius; x++) {
+                    // Check bounds and ensure within a forest
+                    if (x < 0 || x >= world->width || y < 0 || y >= world->height || world->map[y][x].terrain != TITLE_FOREST) continue;
+
+                    // Calculate distance from the center and apply noise for organic shape
+                    float distance = sqrt(pow(x - centerX, 2) + pow(y - centerY, 2));
+                    float noise = perlin(x * 0.1, y * 0.1); // Adjust scale as needed
+
+                    // If within radius and noise threshold, set sub-biome
+                    if (distance <= clusterRadius && noise > noiseThreshold) {
+                        world->map[y][x].specialFeature = subBiomeType;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+
+
+void placeCanyons(World* world) {
+    int numberOfCanyons = 5; // Desired number of canyons
+    for (int i = 0; i < numberOfCanyons; i++) {
+        // Randomly select a starting point in a desert
+        int startX = rand() % world->width;
+        int startY = rand() % world->height;
+        
+        while (world->map[startY][startX].terrain != TITLE_DESERT) {
+            startX = rand() % world->width;
+            startY = rand() % world->height;
+        }
+
+        // Create a canyon from this starting point
+        createCanyon(world, startX, startY);
+    }
+}
+
+void createCanyon(World* world, int startX, int startY) {
+    int length = 3 + (rand() % 5);
+    int currentX = startX;
+    int currentY = startY;
+
+    for (int i = 0; i < length; i++) {
+        // Ensure current position is within world bounds
+        if (currentX < 0 || currentX >= world->width || currentY < 0 || currentY >= world->height) {
+            break; // Stop if the canyon would go out of bounds
+        }
+        
+        // Set the current tile to canyon
+        world->map[currentY][currentX].specialFeature = TITLE_CANYON;
+
+        // Decide the next direction randomly
+        int direction = rand() % 4; // 0=up, 1=right, 2=down, 3=left
+        switch (direction) {
+            case 0: currentY = max(currentY - 1, 0); break; // Move up
+            case 1: currentX = min(currentX + 1, world->width - 1); break; // Move right
+            case 2: currentY = min(currentY + 1, world->height - 1); break; // Move down
+            case 3: currentX = max(currentX - 1, 0); break; // Move left
+        }
+    }
+}
+
+void placeSmoothGrasslandsGreenHills(World* world) {
+    float detailScale = 0.1; // Adjust for finer detail or broader features
+    float threshold = 0.5; // Threshold for determining hill presence
+
+    for (int y = 0; y < world->height; y++) {
+        for (int x = 0; x < world->width; x++) {
+            if (world->map[y][x].terrain == TITLE_GRASSLANDS) {
+                // Use Perlin noise to determine if this part of the grasslands should be a green hill
+                float noiseValue = perlin(x * detailScale, y * detailScale);
+                if (noiseValue > threshold) {
+                    // This tile is part of the Smooth Grasslands Green Hills
+                    world->map[y][x].specialFeature = TITLE_SMOOTH_GRASSLANDS_GREEN_HILLS;
+                }
+            }
+        }
+    }
+}
+
+
+
 
 // Example helper function to determine if a tile is in the northern half of the map
 bool isInNorthernHalf(World* world, int y) {
@@ -426,15 +883,15 @@ void placeStructures(World* world) {
     // Place each structure based on its specific conditions
     placeStructure(world, TITLE_SHIP_WRECK, TITLE_BEACH, "north");
     placeStructure(world, TITLE_FARMLAND, TITLE_GRASSLANDS, "center");
-    placeStructure(world, TITLE_CAVE, TITLE_MOUNTAIN, "north");
+    placeStructure(world, TITLE_CAVE, TITLE_MOUNTAIN, "center");
     placeStructure(world, TITLE_ANCIENT_RUINS, TITLE_DESERT, "south");
     placeStructure(world, TITLE_DOCK, TITLE_BEACH, "east");
     placeStructure(world, TITLE_CITY_YANGSE, TITLE_GRASSLANDS, "northeast");
     placeStructure(world, TITLE_CITY_RAMONDULL, TITLE_GRASSLANDS, "northwest");
     placeStructure(world, TITLE_CITY_MYKE, TITLE_GRASSLANDS, "southwest");
     placeStructure(world, TITLE_CITY_DORPORT, TITLE_GRASSLANDS, "southeast");
-    placeStructure(world, TITLE_ORC_CAMP, TITLE_GRASSLANDS, "north");
-    placeStructure(world, TITLE_ORC_CASTLE, TITLE_TUNDRA, "north");
+    placeStructure(world, TITLE_ORC_CAMP, TITLE_GRASSLANDS, "center");
+    placeStructure(world, TITLE_ORC_CASTLE, TITLE_TUNDRA, "any");
     placeStructure(world, TITLE_ELF_HIDEOUT, TITLE_JUNGLE, "any");
 }
 

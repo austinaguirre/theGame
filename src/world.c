@@ -59,13 +59,13 @@ void generateHeightMap(World* world, float scale, unsigned int seed) {
 void applyBiomesBasedOnHeightAndPosition(World* world) {
     // Constants for noise scale
     float biomeScale = 0.1;
-    float moistureScale = 0.1; // Optional for more complexity
+    // float moistureScale = 0.1; // Optional for more complexity
 
     for (int y = 0; y < world->height; y++) {
         for (int x = 0; x < world->width; x++) {
             // Compute latitude and longitude factors (0 at center, increasing towards edges)
             float latFactor = fabs(y - world->height / 2.0) / (world->height / 2.0);
-            float longFactor = fabs(x - world->width / 2.0) / (world->width / 2.0);
+            // float longFactor = fabs(x - world->width / 2.0) / (world->width / 2.0);
 
             // Determine biome based on height and additional noise layers
             float biomeNoise = perlin(x * biomeScale, y * biomeScale);

@@ -245,9 +245,20 @@ if (playerTileX >= 0 && playerTileX < world->width && playerTileY >= 0 && player
 
 void renderUI(SDL_Renderer* renderer, UIButton* button) {
     SDL_Rect rect = { button->x, button->y, button->width, button->height };
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Example color
+    SDL_SetRenderDrawColor(renderer, 117, 67, 63, 255); // Example color
     SDL_RenderFillRect(renderer, &rect);
     // Additional rendering logic here (e.g., for labels)
+}
+
+void renderDraggedItem(SDL_Renderer* renderer, Player* player) {
+    if (player->inventory.draggedItem != NULL) {
+        int mouseX, mouseY;
+        SDL_GetMouseState(&mouseX, &mouseY);
+        SDL_Rect itemRect = {mouseX - 12, mouseY - 12, 25, 25}; // Center item on cursor
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDL_RenderFillRect(renderer, &itemRect);
+        // Optionally render the item's texture instead of a white rectangle
+    }
 }
 
 

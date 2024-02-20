@@ -51,7 +51,9 @@ int main(int argc, char* argv[]) {
             }
             // check ui clicks in not these places
             if (currentGameState != MENU && currentGameState != PAUSE && currentGameState != GAME_OVER) {
-                if (checkButtonClick(&event, &buttonInventory)){
+                if (currentGameState == INVENTORY && checkButtonClick(&event, &buttonInventory)){
+                    currentGameState = GAMEPLAY;
+                }else if(currentGameState == GAMEPLAY && checkButtonClick(&event, &buttonInventory)){
                     currentGameState = INVENTORY;
                 }
             }
@@ -78,7 +80,7 @@ int main(int argc, char* argv[]) {
 
                     break;
                 case INVENTORY:
-
+                    handle_inventory_input(&event, &player);
                     break;
                 case GAME_OVER:
                     if (event.key.keysym.sym == SDLK_RETURN) {
@@ -128,6 +130,13 @@ int main(int argc, char* argv[]) {
                 break;
             case INVENTORY:
                 renderInventoryScreen(renderer, &player.inventory);
+                if (player.inventory.isDragging && player.inventory.draggedItem != NULL) {
+                    SDL_Rect draggedItemRect = {player.inventory.draggedItemPos.x - 12, player.inventory.draggedItemPos.y - 12, 25, 25}; // Center the item on the cursor
+                    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Example color
+                    SDL_RenderFillRect(renderer, &draggedItemRect);
+                    // Optionally, render the item's texture or a placeholder here
+                }
+
             break;
         }
 

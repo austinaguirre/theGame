@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #include "game.h"
 #include "ui.h"
+#include "config.h"
+#include <stdio.h>
 
 // Adjust these based on your game's window size and grid cell size
 const int GRID_WIDTH = 20; // Assuming 25 grid cells horizontally
@@ -65,5 +67,75 @@ bool checkButtonClick(SDL_Event* event, UIButton* button) {
     }
     return false;
 }
+
+
+void handleInventoryClick(SDL_Event* event, Player* player) {
+    if (event->type == SDL_MOUSEBUTTONDOWN) {
+        int mouseX, mouseY;
+        SDL_GetMouseState(&mouseX, &mouseY);
+        // Assume initially that no item is being dragged
+        player->inventory.isDragging = false;
+        player->inventory.draggedItem = NULL;
+        player->inventory.draggedItemIndex = -1;
+        
+        for (int i = 0; i < 180; i++) {
+            SDL_Point position = calculateItemPosition(i, WINDOW_WIDTH, WINDOW_HEIGHT);
+            SDL_Rect itemRect = {position.x, position.y, 25, 25}; // Adjust size as necessary
+            
+            if (mouseX >= itemRect.x && mouseX <= (itemRect.x + itemRect.w) &&
+                mouseY >= itemRect.y && mouseY <= (itemRect.y + itemRect.h)) {
+                if (player->inventory.inventoryItems[i] != NULL) {
+                    // An item was clicked, set up for dragging
+                    player->inventory.draggedItem = player->inventory.inventoryItems[i];
+                    player->inventory.draggedItemIndex = i;
+                    player->inventory.isDragging = true; // Indicate that an item is being dragged
+                    break; // Found the clicked item, exit the loop
+                }
+            }
+        }
+    }
+}
+
+void handleMouseMovement(SDL_Event* event, Player* player) {
+    if (player->inventory.isDragging && event->type == SDL_MOUSEMOTION) {
+        player->inventory.draggedItemPos.x = event->motion.x;
+        player->inventory.draggedItemPos.y = event->motion.y;
+    }
+}
+
+void handleItemDrop(SDL_Event* event, Player* player) {
+    if (player->inventory.isDragging && event->type == SDL_MOUSEBUTTONUP) {
+        int mouseX, mouseY;
+        SDL_GetMouseState(&mouseX, &mouseY);
+
+        int equipmentSlotIndex = getEquipmentSlotUnderMouse(mouseX, mouseY);
+        int spellSlotIndex = getSpellSlotUnderMouse(mouseX, mouseY);
+        printf("Equipment Slot Index: %d\n", equipmentSlotIndex);
+        printf("Spell Slot Index: %d\n", spellSlotIndex);
+        if (equipmentSlotIndex != -1) {
+            // Equip the item to the appropriate equipment slot
+            equipItemToSlot(player, player->inventory.draggedItem, equipmentSlotIndex);
+        } else if (spellSlotIndex != -1) {
+            // Add the item to the appropriate spell slot, if it's a spell
+            addSpellToSlot(player, player->inventory.draggedItem, spellSlotIndex);
+        } else {
+            // If not dropped on a valid slot, return the item to its original inventory position
+            // or handle as appropriate for your game logic.
+        }
+
+        player->inventory.isDragging = false;
+        player->inventory.draggedItem = NULL;
+        player->inventory.draggedItemIndex = -1;
+    }
+}
+
+
+
+void handle_inventory_input(SDL_Event *event, Player *player){
+    handleInventoryClick(event, player); 
+    handleMouseMovement(event, player);
+    handleItemDrop(event, player);
+}
+
 
 

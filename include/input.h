@@ -15,6 +15,11 @@
 void handle_input(SDL_Event *event, bool *running, Player *player, World* world);
 void handle_gameplay_input(SDL_Event *event, bool *running, Player *player, World *world, GameState *currentGameState, bool *mapView);
 bool checkButtonClick(SDL_Event* event, UIButton* button);
+bool checkClickInRect(SDL_Event* event, SDL_Rect rect);
+void handleInventoryClick(SDL_Event* event, Player* player);
+void handleMouseMovement(SDL_Event* event, Player* player);
+void handleItemDrop(SDL_Event* event, Player* player);
+void handle_inventory_input(SDL_Event *event, Player *player);
 
 
 #endif

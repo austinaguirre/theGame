@@ -20,7 +20,7 @@ void renderInventoryScreen(SDL_Renderer* renderer, const PlayerInventory* invent
 
     //render inv
     for (int i = 0; i < 180; i++) {
-        SDL_Point position = calculateItemPosition(i, WINDOW_WIDTH, WINDOW_HEIGHT);
+        SDL_Point position = calculateItemPosition(i);
         renderInventoryItem(renderer, inventory->inventoryItems[i], position);
     }
 
@@ -77,7 +77,8 @@ void renderSpell(SDL_Renderer* renderer, const Item* spell, SDL_Point position) 
     // For example: SDL_RenderCopy(renderer, spell->texture, NULL, &spellRect);
 }
 
-SDL_Point calculateItemPosition(int index, int screenWidth, int screenHeight) {
+SDL_Point calculateItemPosition(int index) {
+    int screenWidth = WINDOW_WIDTH;
     int itemsPerRow = 10; // Number of items per row in the grid
     int itemSize = 25; // Smaller item size for compact view
     int padding = 4; // Smaller padding between items

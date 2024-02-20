@@ -189,5 +189,20 @@ int getSpellSlotUnderMouse(int mouseX, int mouseY) {
     return -1; // No spell slot under the mouse
 }
 
+int getInventorySlotUnderMouse(int mouseX, int mouseY) {
+    // Calculate the position and dimensions of the inventory grid
+
+    for (int i = 0; i < 180; i++) { // Assuming a total of 180 inventory slots
+        SDL_Point slotPosition = calculateItemPosition(i);
+        SDL_Rect slotRect = {slotPosition.x, slotPosition.y, 25, 25};
+
+        if (mouseX >= slotRect.x && mouseX < (slotRect.x + slotRect.w) &&
+            mouseY >= slotRect.y && mouseY < (slotRect.y + slotRect.h)) {
+            return i; // Return the index of the inventory slot under the mouse
+        }
+    }
+
+    return -1; // No inventory slot under the mouse
+}
 
 

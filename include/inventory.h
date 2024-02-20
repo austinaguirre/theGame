@@ -37,7 +37,7 @@ typedef struct {
 
 void renderInventoryScreen(SDL_Renderer* renderer, const PlayerInventory* inventory);
 void renderEquipmentSlot(SDL_Renderer* renderer, const Item* item, int x, int y);
-SDL_Point calculateItemPosition(int index, int screenWidth, int screenHeight);
+SDL_Point calculateItemPosition(int index);
 void renderInventoryItem(SDL_Renderer* renderer, const Item* item, SDL_Point position);
 Item* createItem(ItemType type, const char* name);
 SDL_Point calculateSpellPosition(int index, int windowWidth);

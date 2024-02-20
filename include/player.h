@@ -22,5 +22,6 @@ void equipItemToSlot(Player* player, Item* draggedItem, int slotIndex);
 int getEquipmentSlotUnderMouse(int mouseX, int mouseY);
 int getSpellSlotUnderMouse(int mouseX, int mouseY);
 void addSpellToSlot(Player* player, Item* draggedItem, int slotIndex);
+int getInventorySlotUnderMouse(int mouseX, int mouseY);
 
 #endif

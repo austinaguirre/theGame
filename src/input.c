@@ -79,7 +79,7 @@ void handleInventoryClick(SDL_Event* event, Player* player) {
         player->inventory.draggedItemIndex = -1;
         
         for (int i = 0; i < 180; i++) {
-            SDL_Point position = calculateItemPosition(i, WINDOW_WIDTH, WINDOW_HEIGHT);
+            SDL_Point position = calculateItemPosition(i);
             SDL_Rect itemRect = {position.x, position.y, 25, 25}; // Adjust size as necessary
             
             if (mouseX >= itemRect.x && mouseX <= (itemRect.x + itemRect.w) &&
@@ -110,24 +110,26 @@ void handleItemDrop(SDL_Event* event, Player* player) {
 
         int equipmentSlotIndex = getEquipmentSlotUnderMouse(mouseX, mouseY);
         int spellSlotIndex = getSpellSlotUnderMouse(mouseX, mouseY);
-        printf("Equipment Slot Index: %d\n", equipmentSlotIndex);
-        printf("Spell Slot Index: %d\n", spellSlotIndex);
+        int inventorySlotIndex = getInventorySlotUnderMouse(mouseX, mouseY);
+
         if (equipmentSlotIndex != -1) {
-            // Equip the item to the appropriate equipment slot
             equipItemToSlot(player, player->inventory.draggedItem, equipmentSlotIndex);
         } else if (spellSlotIndex != -1) {
-            // Add the item to the appropriate spell slot, if it's a spell
             addSpellToSlot(player, player->inventory.draggedItem, spellSlotIndex);
-        } else {
-            // If not dropped on a valid slot, return the item to its original inventory position
-            // or handle as appropriate for your game logic.
+        } else if (inventorySlotIndex != -1) {
+            // Move the item to the new inventory slot, swapping if necessary
+            Item* temp = player->inventory.inventoryItems[inventorySlotIndex];
+            player->inventory.inventoryItems[inventorySlotIndex] = player->inventory.draggedItem;
+            player->inventory.inventoryItems[player->inventory.draggedItemIndex] = temp;
         }
 
+        // Reset dragging state
         player->inventory.isDragging = false;
         player->inventory.draggedItem = NULL;
         player->inventory.draggedItemIndex = -1;
     }
 }
+
 
 
 

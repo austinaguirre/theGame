@@ -23,5 +23,8 @@ int getEquipmentSlotUnderMouse(int mouseX, int mouseY);
 int getSpellSlotUnderMouse(int mouseX, int mouseY);
 void addSpellToSlot(Player* player, Item* draggedItem, int slotIndex);
 int getInventorySlotUnderMouse(int mouseX, int mouseY);
+void unequipItemToInventory(Player* player, int equipmentSlotIndex, int inventorySlotIndex);
+void removeSpellFromPouchToInventory(Player* player, int spellSlotIndex, int inventorySlotIndex);
+
 
 #endif

@@ -109,9 +109,6 @@ void equipItemToSlot(Player* player, Item* draggedItem, int slotIndex) {
             }
         }
     }
-    // Reset dragged item info
-    player->inventory.draggedItem = NULL;
-    player->inventory.draggedItemIndex = -1;
 }
 
 void addSpellToSlot(Player* player, Item* draggedItem, int slotIndex) {
@@ -127,11 +124,45 @@ void addSpellToSlot(Player* player, Item* draggedItem, int slotIndex) {
             }
         }
     }
-    // Reset dragged item info
-    player->inventory.draggedItem = NULL;
-    player->inventory.draggedItemIndex = -1;
 }
 
+void unequipItemToInventory(Player* player, int equipmentSlotIndex, int inventorySlotIndex) {
+    Item* itemToMove = NULL;
+
+    // Determine which equipment slot is being unequipped based on equipmentSlotIndex
+    switch (equipmentSlotIndex) {
+        case 0: itemToMove = player->inventory.helmet; player->inventory.helmet = NULL; break;
+        case 1: itemToMove = player->inventory.chest; player->inventory.chest = NULL; break;
+        case 2: itemToMove = player->inventory.leftArm; player->inventory.leftArm = NULL; break;
+        case 3: itemToMove = player->inventory.rightArm; player->inventory.rightArm = NULL; break;
+        case 4: itemToMove = player->inventory.leftLeg; player->inventory.leftLeg = NULL; break;
+        case 5: itemToMove = player->inventory.rightLeg; player->inventory.rightLeg = NULL; break;
+        case 6: itemToMove = player->inventory.weapon; player->inventory.weapon = NULL; break;
+        case 7: itemToMove = player->inventory.secondaryWeapon; player->inventory.secondaryWeapon = NULL; break;
+    }
+
+    // Check if the target inventory slot is occupied
+    if (player->inventory.inventoryItems[inventorySlotIndex] != NULL) {
+        // Here you could swap items, or handle according to your game logic
+        // For simplicity, we're just cancelling the move if the slot is occupied
+        return;
+    } else {
+        // Place the unequipped item into the target inventory slot
+        player->inventory.inventoryItems[inventorySlotIndex] = itemToMove;
+    }
+}
+
+void removeSpellFromPouchToInventory(Player* player, int spellSlotIndex, int inventorySlotIndex) {
+    // Check if the target inventory slot is occupied
+    if (player->inventory.inventoryItems[inventorySlotIndex] != NULL) {
+        // Handle according to your game logic, such as canceling the move
+        return;
+    } else {
+        // Move the spell from the spell pouch to the target inventory slot
+        player->inventory.inventoryItems[inventorySlotIndex] = player->inventory.spellPouch[spellSlotIndex];
+        player->inventory.spellPouch[spellSlotIndex] = NULL; // Clear the spell slot
+    }
+}
 
 
 // Define the positions of equipment slots relative to the window/screen.
@@ -147,7 +178,6 @@ const SDL_Rect equipmentSlotPositions[] = {
     {450, 75, 50, 50}    // Secondary Weapon
 };
 
-// This function checks if the mouse is over any equipment slot and returns the slot index or -1 if none.
 int getEquipmentSlotUnderMouse(int mouseX, int mouseY) {
     for (int i = 0; i < sizeof(equipmentSlotPositions) / sizeof(equipmentSlotPositions[0]); i++) {
         const SDL_Rect* slotRect = &equipmentSlotPositions[i];
@@ -177,7 +207,6 @@ const SDL_Rect spellSlotPositions[] = {
     // Add more slots if you have more than 5 spells in a row
 };
 
-// This function checks if the mouse is over any spell slot and returns the slot index or -1 if none.
 int getSpellSlotUnderMouse(int mouseX, int mouseY) {
     for (int i = 0; i < sizeof(spellSlotPositions) / sizeof(spellSlotPositions[0]); i++) {
         const SDL_Rect* slotRect = &spellSlotPositions[i];

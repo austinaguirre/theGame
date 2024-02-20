@@ -5,6 +5,7 @@
 #include <SDL.h>
 #include <stdbool.h>
 typedef enum {
+    ITEM_TYPE_NONE = -1,
     ITEM_TYPE_EQUIPMENT,
     ITEM_TYPE_SPELL,
     ITEM_TYPE_GEM
@@ -15,6 +16,10 @@ typedef struct {
     char* name; // Name of the item
     // Add more properties specific to items, such as stats, effects, etc.
 } Item;
+
+#define DRAGGED_FROM_INVENTORY 1
+#define DRAGGED_FROM_EQUIPMENT 2
+#define DRAGGED_FROM_SPELL_POUCH 3
 
 typedef struct {
     Item* helmet;
@@ -32,6 +37,7 @@ typedef struct {
     ItemType draggedItemType; // Type of the dragged item
     bool isDragging; // Flag to indicate if an item is currently being dragged
     SDL_Point draggedItemPos; // Position of the dragged item (relative to the mouse cursor)
+    int draggedItemSource;
 } PlayerInventory;
 
 

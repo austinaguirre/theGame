@@ -155,6 +155,49 @@ void handleMouseMovement(SDL_Event* event, Player* player) {
     }
 }
 
+// void handleItemDrop(SDL_Event* event, Player* player) {
+//     if (!player->inventory.isDragging || event->type != SDL_MOUSEBUTTONUP) return;
+//     int mouseX, mouseY;
+//     SDL_GetMouseState(&mouseX, &mouseY);
+
+//     int equipmentSlotIndex = getEquipmentSlotUnderMouse(mouseX, mouseY);
+//     int spellSlotIndex = getSpellSlotUnderMouse(mouseX, mouseY);
+//     int inventorySlotIndex = getInventorySlotUnderMouse(mouseX, mouseY);
+
+//     switch (player->inventory.draggedItemSource) {
+//         case DRAGGED_FROM_INVENTORY:
+//             if (equipmentSlotIndex != -1 && player->inventory.draggedItemType == ITEM_TYPE_EQUIPMENT) {
+//                 // Attempt to equip the item to the appropriate equipment slot
+//                 equipItemToSlot(player, player->inventory.draggedItem, equipmentSlotIndex);
+//             } else if (spellSlotIndex != -1 && player->inventory.draggedItemType == ITEM_TYPE_SPELL) {
+//                 // Attempt to add the spell to the appropriate spell slot
+//                 addSpellToSlot(player, player->inventory.draggedItem, spellSlotIndex);
+//             } else if (inventorySlotIndex != -1 && inventorySlotIndex != player->inventory.draggedItemIndex) {
+//                 // Move the item within the inventory, swapping slots if necessary
+//                 Item* temp = player->inventory.inventoryItems[inventorySlotIndex];
+//                 player->inventory.inventoryItems[inventorySlotIndex] = player->inventory.draggedItem;
+//                 player->inventory.inventoryItems[player->inventory.draggedItemIndex] = temp;
+//             }
+//             break;
+
+//         case DRAGGED_FROM_EQUIPMENT:
+//             if (inventorySlotIndex != -1) {
+//                 // The item was dragged from an equipment slot to the inventory
+//                 unequipItemToInventory(player, player->inventory.draggedItemIndex, inventorySlotIndex);
+//             }
+//             break;
+
+//         case DRAGGED_FROM_SPELL_POUCH:
+//             if (inventorySlotIndex != -1) {
+//                 // The spell was dragged from the spell pouch to the inventory
+//                 removeSpellFromPouchToInventory(player, player->inventory.draggedItemIndex, inventorySlotIndex);
+//             }
+//             break;
+//     }
+
+//     // Regardless of where the item was dropped, reset the dragging state
+//     resetDraggingState(player);
+// }
 void handleItemDrop(SDL_Event* event, Player* player) {
     if (!player->inventory.isDragging || event->type != SDL_MOUSEBUTTONUP) return;
     int mouseX, mouseY;
@@ -164,6 +207,7 @@ void handleItemDrop(SDL_Event* event, Player* player) {
     int spellSlotIndex = getSpellSlotUnderMouse(mouseX, mouseY);
     int inventorySlotIndex = getInventorySlotUnderMouse(mouseX, mouseY);
 
+    // Use the draggedItemSource to determine the original location of the item
     switch (player->inventory.draggedItemSource) {
         case DRAGGED_FROM_INVENTORY:
             if (equipmentSlotIndex != -1 && player->inventory.draggedItemType == ITEM_TYPE_EQUIPMENT) {
@@ -181,23 +225,23 @@ void handleItemDrop(SDL_Event* event, Player* player) {
             break;
 
         case DRAGGED_FROM_EQUIPMENT:
+            // Ensure we are moving to a valid inventory slot
             if (inventorySlotIndex != -1) {
-                // The item was dragged from an equipment slot to the inventory
                 unequipItemToInventory(player, player->inventory.draggedItemIndex, inventorySlotIndex);
             }
             break;
 
         case DRAGGED_FROM_SPELL_POUCH:
+            // Ensure we are moving to a valid inventory slot
             if (inventorySlotIndex != -1) {
-                // The spell was dragged from the spell pouch to the inventory
                 removeSpellFromPouchToInventory(player, player->inventory.draggedItemIndex, inventorySlotIndex);
             }
             break;
     }
 
-    // Regardless of where the item was dropped, reset the dragging state
     resetDraggingState(player);
 }
+
 
 void resetDraggingState(Player* player) {
     player->inventory.isDragging = false;

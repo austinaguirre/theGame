@@ -17,43 +17,59 @@ void player_init(Player* player, SDL_Renderer* renderer) {
     }
 }
 
-void player_init_inventory(Player* player) {
+void player_init_inventory(Player* player) { 
     // Initialize equipment slots with NULL or placeholder items
-    player->inventory.helmet = createItem(ITEM_TYPE_EQUIPMENT, "Helmet");
-    player->inventory.chest = createItem(ITEM_TYPE_EQUIPMENT, "Chest");
+    player->inventory.helmet = createEquipmentItem(EQUIPMENT_TYPE_HELMET, "Helmet", 100, 5);
+    player->inventory.chest = createEquipmentItem(EQUIPMENT_TYPE_CHEST, "Chest", 150, 10);
     player->inventory.leftArm = NULL;
-    player->inventory.rightArm = createItem(ITEM_TYPE_EQUIPMENT, "Right Arm");
-    player->inventory.leftLeg = createItem(ITEM_TYPE_EQUIPMENT, "Left Leg");
+    player->inventory.rightArm = NULL;
+    player->inventory.leftLeg = NULL;
     player->inventory.rightLeg = NULL;
-    player->inventory.weapon = createItem(ITEM_TYPE_EQUIPMENT, "Weapon");
+    player->inventory.weapon = createWeaponItem(WEAPON_TYPE_SWORD, "Sword", 200, 15, 1);
     player->inventory.secondaryWeapon = NULL;
 
-    // Initialize half the spell pouch with placeholder spells and the other half as NULL
+    // Initialize the spell pouch with placeholder spells and the other half as NULL
     for (int i = 0; i < 10; i++) {
-        if (i < 6) { // First half filled
+        if (i < 5) { // First half filled with spells
             char spellName[30];
-            sprintf(spellName, "Spell %d", i + 1); // Create a unique name for each spell
-            player->inventory.spellPouch[i] = createItem(ITEM_TYPE_SPELL, spellName);
+            sprintf(spellName, "Spell %d", i + 1);
+            player->inventory.spellPouch[i] = createSpellItem(SPELL_TYPE_DAMAGE, spellName, 50, 10, 5);
         } else { // Second half set to NULL
             player->inventory.spellPouch[i] = NULL;
         }
     }
 
-    // Initialize half the inventory items with a mix of items, the other half as NULL
+    // Initialize inventory items with a mix of items, the other half as NULL
     for (int i = 0; i < 180; i++) {
-        if (i < 100) { // First half filled
-            if (i <= 40) {
-                char itemName[30];
-                sprintf(itemName, "spell %d", i / 5 + 1);
-                player->inventory.inventoryItems[i] = createItem(ITEM_TYPE_SPELL, itemName);
-            } else if (i <= 60){
-                char itemName[30];
-                sprintf(itemName, "gem %d", i);
-                player->inventory.inventoryItems[i] = createItem(ITEM_TYPE_GEM, itemName);
-            }else {
-                char itemName[30];
+        if (i < 90) { // First half filled
+            char itemName[30];
+            if (i < 10) {
+                sprintf(itemName, "Gem %d", i / 2 + 1);
+                player->inventory.inventoryItems[i] = createItem(ITEM_TYPE_GEM, itemName, 25);
+            } else if (i < 20){
                 sprintf(itemName, "Equipment %d", i);
-                player->inventory.inventoryItems[i] = createItem(ITEM_TYPE_EQUIPMENT, itemName);
+                player->inventory.inventoryItems[i] = createEquipmentItem(EQUIPMENT_TYPE_ARM, itemName, 50, 2);
+            }else if (i < 30){
+                sprintf(itemName, "Spell %d", i + 1);
+                player->inventory.inventoryItems[i] = createSpellItem(SPELL_TYPE_DAMAGE, itemName, 50, 10, 5);
+            }else if (i < 40){
+                sprintf(itemName, "Equipment %d", i);
+                player->inventory.inventoryItems[i] = createEquipmentItem(EQUIPMENT_TYPE_ARM, itemName, 50, 2);
+            }else if (i < 50){
+                sprintf(itemName, "Equipment %d", i);
+                player->inventory.inventoryItems[i] = createEquipmentItem(EQUIPMENT_TYPE_LEG, itemName, 50, 2);
+            }else if (i < 60){
+                sprintf(itemName, "shield %d", i);
+                player->inventory.inventoryItems[i] = createEquipmentItem(EQUIPMENT_TYPE_SHIELD, itemName, 50, 2);
+            }else if (i < 70){
+                sprintf(itemName, "sword %d", i);
+                player->inventory.inventoryItems[i] = createWeaponItem(WEAPON_TYPE_SWORD, itemName, 50, 2, 2);
+            }else if (i < 80){
+                sprintf(itemName, "spell %d", i);
+                player->inventory.inventoryItems[i] = createSpellItem(SPELL_TYPE_DEBUFF, itemName, 50, 10, 5);
+            }else{
+                sprintf(itemName, "spell %d", i);
+                player->inventory.inventoryItems[i] = createSpellItem(SPELL_TYPE_HEAL, itemName, 50, 10, 5);
             }
         } else { // Second half set to NULL
             player->inventory.inventoryItems[i] = NULL;

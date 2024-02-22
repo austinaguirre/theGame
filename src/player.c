@@ -41,30 +41,30 @@ void player_init_inventory(Player* player) {
 
     // Initialize inventory items with a mix of items, the other half as NULL
     for (int i = 0; i < 180; i++) {
-        if (i < 90) { // First half filled
+        if (i <= 90) { // First half filled
             char itemName[30];
-            if (i < 10) {
-                sprintf(itemName, "Gem %d", i / 2 + 1);
+            if (i <= 10) {
+                sprintf(itemName, "Gem %d", i);
                 player->inventory.inventoryItems[i] = createItem(ITEM_TYPE_GEM, itemName, 25);
-            } else if (i < 20){
+            } else if (i <= 20){
                 sprintf(itemName, "Equipment %d", i);
                 player->inventory.inventoryItems[i] = createEquipmentItem(EQUIPMENT_TYPE_ARM, itemName, 50, 2);
-            }else if (i < 30){
+            }else if (i <= 30){
                 sprintf(itemName, "Spell %d", i + 1);
                 player->inventory.inventoryItems[i] = createSpellItem(SPELL_TYPE_DAMAGE, itemName, 50, 10, 5);
-            }else if (i < 40){
+            }else if (i <= 40){
                 sprintf(itemName, "Equipment %d", i);
                 player->inventory.inventoryItems[i] = createEquipmentItem(EQUIPMENT_TYPE_ARM, itemName, 50, 2);
-            }else if (i < 50){
-                sprintf(itemName, "Equipment %d", i);
-                player->inventory.inventoryItems[i] = createEquipmentItem(EQUIPMENT_TYPE_LEG, itemName, 50, 2);
-            }else if (i < 60){
+            }else if (i <= 50){
+                sprintf(itemName, "staff %d", i);
+                player->inventory.inventoryItems[i] = createWeaponItem(WEAPON_TYPE_STAFF, itemName, 50, 2, 1);
+            }else if (i <= 60){
                 sprintf(itemName, "shield %d", i);
                 player->inventory.inventoryItems[i] = createEquipmentItem(EQUIPMENT_TYPE_SHIELD, itemName, 50, 2);
-            }else if (i < 70){
+            }else if (i <= 70){
                 sprintf(itemName, "sword %d", i);
-                player->inventory.inventoryItems[i] = createWeaponItem(WEAPON_TYPE_SWORD, itemName, 50, 2, 2);
-            }else if (i < 80){
+                player->inventory.inventoryItems[i] = createWeaponItem(WEAPON_TYPE_SWORD, itemName, 50, 3, 3);
+            }else if (i <= 80){
                 sprintf(itemName, "spell %d", i);
                 player->inventory.inventoryItems[i] = createSpellItem(SPELL_TYPE_DEBUFF, itemName, 50, 10, 5);
             }else{
@@ -79,7 +79,7 @@ void player_init_inventory(Player* player) {
 
 void equipItemToSlot(Player* player, Item* draggedItem, int slotIndex) {
     // Assuming the order of equipment slots in PlayerInventory matches equipmentSlotPositions
-    if (draggedItem->type == ITEM_TYPE_EQUIPMENT) {
+    if (draggedItem->type == ITEM_TYPE_EQUIPMENT || draggedItem->type == ITEM_TYPE_WEAPON) {
         // Find the appropriate slot for the item based on slotIndex
         switch (slotIndex) {
             case 0: // Helmet slot

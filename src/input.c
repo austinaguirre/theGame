@@ -210,7 +210,9 @@ void handleItemDrop(SDL_Event* event, Player* player) {
     // Use the draggedItemSource to determine the original location of the item
     switch (player->inventory.draggedItemSource) {
         case DRAGGED_FROM_INVENTORY:
-            if (equipmentSlotIndex != -1 && player->inventory.draggedItemType == ITEM_TYPE_EQUIPMENT) {
+            if (equipmentSlotIndex != -1 && (
+                player->inventory.draggedItemType == ITEM_TYPE_EQUIPMENT ||
+                player->inventory.draggedItemType == ITEM_TYPE_WEAPON)) {
                 // Attempt to equip the item to the appropriate equipment slot
                 equipItemToSlot(player, player->inventory.draggedItem, equipmentSlotIndex);
             } else if (spellSlotIndex != -1 && player->inventory.draggedItemType == ITEM_TYPE_SPELL) {

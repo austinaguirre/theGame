@@ -79,52 +79,68 @@ void player_init_inventory(Player* player) {
 
 void equipItemToSlot(Player* player, Item* draggedItem, int slotIndex) {
     // Assuming the order of equipment slots in PlayerInventory matches equipmentSlotPositions
-    if (draggedItem->type == ITEM_TYPE_EQUIPMENT || draggedItem->type == ITEM_TYPE_WEAPON) {
-        // Find the appropriate slot for the item based on slotIndex
-        switch (slotIndex) {
-            case 0: // Helmet slot
-                player->inventory.helmet = draggedItem;
-                break;
-            case 1: // Chest slot
-                player->inventory.chest = draggedItem;
-                break;
-            case 2: // Left Arm slot
-                player->inventory.leftArm = draggedItem;
-                break;
-            case 3: // Right Arm slot
-                player->inventory.rightArm = draggedItem;
-                break;
-            case 4: // Left Leg slot
-                player->inventory.leftLeg = draggedItem;
-                break;
-            case 5: // Right Leg slot
-                player->inventory.rightLeg = draggedItem;
-                break;
-            case 6: // Weapon slot
-                player->inventory.weapon = draggedItem;
-                break;
-            case 7: // Secondary Weapon slot
-                player->inventory.secondaryWeapon = draggedItem;
-                break;
-            default:
-                // This case should not occur if slotIndex is valid
-                break;
-        }
-        // After equipping, remove the item from the draggedItemIndex in inventory
-        // Note: Ensure draggedItemIndex is correctly set when beginning the drag operation
-        if (player->inventory.draggedItemIndex >= 0) {
-            player->inventory.inventoryItems[player->inventory.draggedItemIndex] = NULL;
-        }
-    } else if (draggedItem->type == ITEM_TYPE_SPELL) {
-        // Assuming spells can only be equipped to the spell pouch
-        for (int i = 0; i < 10; i++) {
-            if (player->inventory.spellPouch[i] == NULL) {
-                player->inventory.spellPouch[i] = draggedItem;
-                player->inventory.inventoryItems[player->inventory.draggedItemIndex] = NULL; // Remove from inventory
-                break;
-            }
-        }
+    Item **targetSlot = NULL;
+
+    // Determine the target equipment slot based on slotIndex
+    switch (slotIndex) {
+        case 0: targetSlot = &player->inventory.helmet; break;
+        case 1: targetSlot = &player->inventory.chest; break;
+        case 2: targetSlot = &player->inventory.leftArm; break;
+        case 3: targetSlot = &player->inventory.rightArm; break;
+        case 4: targetSlot = &player->inventory.leftLeg; break;
+        case 5: targetSlot = &player->inventory.rightLeg; break;
+        case 6: targetSlot = &player->inventory.weapon; break;
+        case 7: targetSlot = &player->inventory.secondaryWeapon; break;
+        default:
+            // Handle invalid slotIndex if necessary
+            return;
     }
+
+    if (!isWeaponTypeValidForSlot(slotIndex, draggedItem->weapon.weaponType, draggedItem->equipment.equipmentType)) {
+        // Reset dragged item info and exit if not valid
+        player->inventory.draggedItem = NULL;
+        player->inventory.draggedItemIndex = -1;
+        return;
+    }
+
+    // Perform the swap if the slot is already occupied
+    if (*targetSlot != NULL) {
+        // Swap the items between the equipment slot and the inventory slot
+        Item* temp = *targetSlot;
+        *targetSlot = draggedItem; // Equip the dragged item
+
+        // Place the previously equipped item back into the inventory slot from which the dragged item came
+        player->inventory.inventoryItems[player->inventory.draggedItemIndex] = temp;
+    } else {
+        // If the slot was not occupied, just equip the item directly
+        *targetSlot = draggedItem;
+
+        // Since the item was equipped successfully, clear the inventory slot
+        player->inventory.inventoryItems[player->inventory.draggedItemIndex] = NULL;
+    }
+
+    // Reset dragged item info
+    player->inventory.draggedItem = NULL;
+    player->inventory.draggedItemIndex = -1;
+}
+
+bool isWeaponTypeValidForSlot(int slotIndex, WeaponType weaponType, EquipmentType equipmentType) {
+    // Check for weapon slots
+    if (slotIndex == 6 || slotIndex == 7) {
+        return weaponType == WEAPON_TYPE_BOW ||
+               weaponType == WEAPON_TYPE_STAFF ||
+               weaponType == WEAPON_TYPE_SWORD ||
+               equipmentType == EQUIPMENT_TYPE_SHIELD;
+    }
+    // Check for armor slots
+    else if (slotIndex <= 5) {
+        return equipmentType == EQUIPMENT_TYPE_ARM ||
+               equipmentType == EQUIPMENT_TYPE_CHEST ||
+               equipmentType == EQUIPMENT_TYPE_HELMET ||
+               equipmentType == EQUIPMENT_TYPE_LEG;
+    }
+    // Default case if slotIndex is not recognized
+    return false;
 }
 
 void addSpellToSlot(Player* player, Item* draggedItem, int slotIndex) {
@@ -132,15 +148,27 @@ void addSpellToSlot(Player* player, Item* draggedItem, int slotIndex) {
     if (draggedItem->type == ITEM_TYPE_SPELL) {
         // Check if the slotIndex is within the bounds of the spell pouch
         if (slotIndex >= 0 && slotIndex < 10) {
-            // Place the spell in the specified slot, if that slot is empty
-            if (player->inventory.spellPouch[slotIndex] == NULL) {
+            // If the targeted spell slot is already occupied, swap the spells
+            if (player->inventory.spellPouch[slotIndex] != NULL) {
+                // Store the spell that's currently in the targeted slot
+                Item* tempSpell = player->inventory.spellPouch[slotIndex];
+                
+                // Place the dragged spell in the targeted slot
                 player->inventory.spellPouch[slotIndex] = draggedItem;
-                // Remove the spell from its original position in the inventory
+                
+                // Move the previously slotted spell back to the inventory slot from which the dragged spell came
+                player->inventory.inventoryItems[player->inventory.draggedItemIndex] = tempSpell;
+            } else {
+                // If the targeted slot is empty, just place the dragged spell in the slot
+                player->inventory.spellPouch[slotIndex] = draggedItem;
+                
+                // Since the spell was successfully placed in the spell pouch, clear the originating inventory slot
                 player->inventory.inventoryItems[player->inventory.draggedItemIndex] = NULL;
             }
         }
     }
 }
+
 
 void unequipItemToInventory(Player* player, int equipmentSlotIndex, int inventorySlotIndex) {
     Item* itemToMove = NULL;

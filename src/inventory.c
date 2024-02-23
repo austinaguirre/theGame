@@ -261,6 +261,8 @@ Item* createEquipmentItem(EquipmentType equipmentType, const char* name, int val
     newItem->value = value;
     newItem->equipment.equipmentType = equipmentType;
     newItem->equipment.defense = defense;
+    newItem->weapon.weaponType = WEAPON_TYPE_NONE;
+    newItem->spell.spellType = SPELL_TYPE_NONE;
     printf("Creating Equipment: %s, Equipment.equipmentType: %s, Type: %s, Defense: %d, Value: %d\n", 
             name, equipmentTypeToString(equipmentType),itemTypeToString(newItem->type), defense, value);
     return newItem;
@@ -277,6 +279,7 @@ Item* createWeaponItem(WeaponType weaponType, const char* name, int value, int d
     newItem->weapon.attackRate = attackRate;
     newItem->type = ITEM_TYPE_WEAPON;
     newItem->spell.spellType = SPELL_TYPE_NONE;
+    newItem->equipment.equipmentType = EQUIPMENT_TYPE_NONE;
     printf("Creating Weapon: %s, weaponType: %s, type: %s, Damage: %d, Attack Rate: %d, Value: %d\n",
                 name, weaponTypeToString(weaponType), itemTypeToString(newItem->type), damage, attackRate, value);
     return newItem;
@@ -291,6 +294,8 @@ Item* createSpellItem(SpellType spellType, const char* name, int value, int powe
     newItem->spell.spellType = spellType;
     newItem->spell.power = power;
     newItem->spell.duration = duration;
+    newItem->equipment.equipmentType = EQUIPMENT_TYPE_NONE;
+    newItem->weapon.weaponType = WEAPON_TYPE_NONE;
     printf("Creating Spell: %s, SpellType: %s, type: %s, Power: %d, Duration: %d, Value: %d\n",
            name, spellTypeToString(spellType), itemTypeToString(newItem->type), power, duration, value);
     return newItem;

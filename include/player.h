@@ -25,6 +25,7 @@ void addSpellToSlot(Player* player, Item* draggedItem, int slotIndex);
 int getInventorySlotUnderMouse(int mouseX, int mouseY);
 void unequipItemToInventory(Player* player, int equipmentSlotIndex, int inventorySlotIndex);
 void removeSpellFromPouchToInventory(Player* player, int spellSlotIndex, int inventorySlotIndex);
+bool isWeaponTypeValidForSlot(int slotIndex, WeaponType weaponType, EquipmentType equipmentType);
 
 
 #endif

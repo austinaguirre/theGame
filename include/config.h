@@ -4,6 +4,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <SDL.h>
+
 extern const int WINDOW_WIDTH;
 extern const int WINDOW_HEIGHT;
 extern const int GRID_COLS;
@@ -11,5 +13,8 @@ extern const int GRID_ROWS;
 extern const int CELL_WIDTH;
 extern const int CELL_HEIGHT;
 extern const int TILE_SIZE;
+
+extern SDL_Color textColor;
+extern float textScale;
 
 #endif

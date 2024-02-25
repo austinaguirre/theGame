@@ -38,25 +38,39 @@ int main(int argc, char* argv[]) {
     GameState currentGameState = MENU;
 
     int menuSelection = 0; // For handling menu selection
-    SDL_Color textColor = {255, 255, 255, 255}; // Default text color
-    float textScale = 1.0f; // Default text scale
     bool mapView = false;
 
     UIButton buttonInventory = {0, 400, 50, 50, "Inventory"};
+    UIButton buttonStatsPage = {0, 450, 50, 50, "Stats Page"};
 
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 running = false;
             }
-            // check ui clicks in not these places
+
+            // Check if the game is currently not in MENU, PAUSE, or GAME_OVER states
             if (currentGameState != MENU && currentGameState != PAUSE && currentGameState != GAME_OVER) {
-                if (currentGameState == INVENTORY && checkButtonClick(&event, &buttonInventory)){
-                    currentGameState = GAMEPLAY;
-                }else if(currentGameState == GAMEPLAY && checkButtonClick(&event, &buttonInventory)){
-                    currentGameState = INVENTORY;
+                // Check for Inventory button click
+                if (checkButtonClick(&event, &buttonInventory)) {
+                    currentGameState = (currentGameState == INVENTORY) ? GAMEPLAY : INVENTORY;
+                    // if (currentGameState == INVENTORY) {
+                    //     currentGameState = GAMEPLAY;
+                    // }else{
+                    //     currentGameState = INVENTORY;
+                    // }
+                }
+                // Check for Stats Page button click
+                else if (checkButtonClick(&event, &buttonStatsPage)) {
+                    currentGameState = (currentGameState == STATS_PAGE) ? GAMEPLAY : STATS_PAGE;
+                    // if(currentGameState == STATS_PAGE){
+                    //     currentGameState = GAMEPLAY;
+                    // }else{
+                    //     currentGameState = INVENTORY;
+                    // }
                 }
             }
+
 
             // Handle input based on the current game state
             switch (currentGameState) {
@@ -89,12 +103,11 @@ int main(int argc, char* argv[]) {
                         world_init(&world, worldWidth, worldHeight, seed); // Reset world
                     }
                     break;
+                case STATS_PAGE:
+                    handle_stats_page_input(&event);
+                    break;
             }
         }
-
-        // if (currentGameState == GAMEPLAY) {
-        //     update_camera_position(&camera, &world, &player);
-        // }
 
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Set background color
         SDL_RenderClear(renderer); // Clear the screen with the background color
@@ -130,19 +143,17 @@ int main(int argc, char* argv[]) {
                 break;
             case INVENTORY:
                 renderInventoryScreen(renderer, &player.inventory);
-                if (player.inventory.isDragging && player.inventory.draggedItem != NULL) {
-                    SDL_Rect draggedItemRect = {player.inventory.draggedItemPos.x - 12, player.inventory.draggedItemPos.y - 12, 25, 25}; // Center the item on the cursor
-                    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Example color
-                    SDL_RenderFillRect(renderer, &draggedItemRect);
-                    // Optionally, render the item's texture or a placeholder here
-                }
-
-            break;
+                renderDraggedItem(renderer, &player.inventory);
+                break;
+            case STATS_PAGE:
+                renderStatsPageScreen(renderer, &player.stats, &player.characterClass);
+                break;
         }
 
         // Render UI only in certain states
         if (currentGameState != MENU && currentGameState != PAUSE && currentGameState != GAME_OVER) {
             renderUI(renderer, &buttonInventory);
+            renderUI(renderer, &buttonStatsPage);
         }
 
         SDL_RenderPresent(renderer); // Update the screen with rendered content

@@ -1,6 +1,14 @@
 #include "inventory.h"
 #include "config.h"
 
+void renderDraggedItem(SDL_Renderer* renderer, PlayerInventory* inventory){
+    if (inventory->isDragging && inventory->draggedItem != NULL) {
+        SDL_Rect draggedItemRect = {inventory->draggedItemPos.x - 12, inventory->draggedItemPos.y - 12, 25, 25}; // Center the item on the cursor
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Example color
+        SDL_RenderFillRect(renderer, &draggedItemRect);
+        // Optionally, render the item's texture or a placeholder here
+    }
+}
 
 void renderInventoryScreen(SDL_Renderer* renderer, const PlayerInventory* inventory) {
     // Set background for the inventory screen

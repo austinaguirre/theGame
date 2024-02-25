@@ -4,6 +4,8 @@
 
 #include <SDL.h>
 #include <stdbool.h>
+#include "config.h"
+#include "text.h"
 
 typedef struct {
     int x, y; // Position
@@ -12,6 +14,6 @@ typedef struct {
     // You can expand this struct with more properties, like textures for the button.
 } UIButton;
 
-// Function prototypes
+void renderButton(SDL_Renderer* renderer, UIButton* button);
 
 #endif // UI_H

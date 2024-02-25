@@ -4,15 +4,19 @@
 
 #include <SDL.h>
 #include "inventory.h"
+#include "stats.h"
 
 struct Camera; 
 // struct World;
 
-// Player structure
 typedef struct {
     int x, y; // Player position
     SDL_Texture* texture; // Player texture
     PlayerInventory inventory;
+    PlayerStats stats;
+    CharacterClass characterClass;
+    int level;
+    int experience;
 } Player;
 
 // Function declarations

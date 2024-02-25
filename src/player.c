@@ -18,6 +18,28 @@ void player_init(Player* player, SDL_Renderer* renderer) {
 }
 
 void player_init_inventory(Player* player) { 
+    // Set player class
+    player->characterClass = CLASS_KNIGHT;
+
+    // Set starting level and experience
+    player->level = 4;
+    player->experience = 10;
+
+    // Initialize stats
+    player->stats.melee.strength = 10;
+    player->stats.melee.attackSpeed = 10;
+    player->stats.range.accuracy = 2;
+    player->stats.range.reloadSpeed = 2;
+    player->stats.defence.health = 120;
+    player->stats.defence.healthRecovery = 12;
+    player->stats.defence.magicResistance = 5;
+    player->stats.defence.meleeResistance = 6;
+    player->stats.magic.spellPower = 0;
+    player->stats.magic.mana = 10;
+    player->stats.magic.manaRecovery = 1;
+    player->stats.agility.dodgeChance = 10;
+    player->stats.agility.movementSpeed = 10;
+
     // Initialize equipment slots with NULL or placeholder items
     player->inventory.helmet = createEquipmentItem(EQUIPMENT_TYPE_HELMET, "Helmet", 100, 5);
     player->inventory.chest = createEquipmentItem(EQUIPMENT_TYPE_CHEST, "Chest", 150, 10);
@@ -125,6 +147,9 @@ void equipItemToSlot(Player* player, Item* draggedItem, int slotIndex) {
 }
 
 bool isWeaponTypeValidForSlot(int slotIndex, WeaponType weaponType, EquipmentType equipmentType) {
+
+    //something about levels here
+
     // Check for weapon slots
     if (slotIndex == 6 || slotIndex == 7) {
         return weaponType == WEAPON_TYPE_BOW ||

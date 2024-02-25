@@ -39,29 +39,6 @@ typedef enum {
     // Add more spell types as needed
 } SpellType;
 
-// typedef struct {
-//     ItemType type;
-//     char* name; // Name of the item
-//     int value; // General value for the item, applicable to all types
-//     union {
-//         struct {
-//             EquipmentType equipmentType;
-//             int defense; // For armor items
-//         } equipment;
-
-//         struct {
-//             WeaponType weaponType;
-//             int damage; // For weapon items
-//             int attackRate; // For items that affect attack rate
-//         } weapon;
-
-//         struct {
-//             SpellType spellType;
-//             int power; // For spells, indicates the strength or healing amount
-//             int duration; // For spells with lasting effects
-//         } spell;
-//     };
-// } Item;
 typedef struct {
     ItemType type;
     char* name; // Name of the item
@@ -111,6 +88,7 @@ typedef struct {
 
 
 void renderInventoryScreen(SDL_Renderer* renderer, const PlayerInventory* inventory);
+void renderDraggedItem(SDL_Renderer* renderer, PlayerInventory* inventory);
 void renderEquipmentSlot(SDL_Renderer* renderer, const Item* item, int x, int y);
 SDL_Point calculateItemPosition(int index);
 void renderInventoryItem(SDL_Renderer* renderer, const Item* item, SDL_Point position);

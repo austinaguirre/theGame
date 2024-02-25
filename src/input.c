@@ -201,7 +201,6 @@ void handleItemDrop(SDL_Event* event, Player* player) {
     resetDraggingState(player);
 }
 
-
 void resetDraggingState(Player* player) {
     player->inventory.isDragging = false;
     player->inventory.draggedItem = NULL;
@@ -209,10 +208,6 @@ void resetDraggingState(Player* player) {
     player->inventory.draggedItemType = ITEM_TYPE_NONE;
     player->inventory.draggedItemSource = 0;
 }
-
-
-
-
 
 void handle_inventory_input(SDL_Event *event, Player *player){
     handleInventoryClick(event, player); 

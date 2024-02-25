@@ -10,7 +10,8 @@ typedef enum GameState {
     GAME_OVER,
     ENEMY_ENCOUNTER,
     CITY_INTERACTION,
-    INVENTORY
+    INVENTORY,
+    STATS_PAGE
 } GameState;
 
 #endif

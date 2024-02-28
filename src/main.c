@@ -11,6 +11,7 @@
 #include "config.h"
 #include "ui.h"
 #include "inventory.h"
+#include "city.h"
 
 int main(int argc, char* argv[]) {
     SDL_Window* window = NULL;
@@ -90,9 +91,11 @@ int main(int argc, char* argv[]) {
                 case ENEMY_ENCOUNTER:
 
                     break;
-                case CITY_INTERACTION:
-
+                case CITY_INTERACTION:{
+                    City* currentCity = getCityFromTile(&world, player.x, player.y);
+                    if (currentCity != NULL) {handle_city_interaction(&event, currentCity);}
                     break;
+                }
                 case INVENTORY:
                     handle_inventory_input(&event, &player);
                     break;
@@ -135,9 +138,11 @@ int main(int argc, char* argv[]) {
             case ENEMY_ENCOUNTER:
                 render_text(renderer, "enemy", 100, 100, textColor, textScale); // Display pause message
                 break;
-            case CITY_INTERACTION:
-                render_text(renderer, "city", 100, 100, textColor, textScale); // Display pause message
+            case CITY_INTERACTION:{
+                City* currentCity = getCityFromTile(&world, player.x, player.y);
+                if (currentCity != NULL) { renderCityInteraction(renderer, currentCity); } else { /*error handle*/}
                 break;
+            }
             case GAME_OVER:
                 render_text(renderer, "Game Over", 100, 100, textColor, textScale); // Display game over message
                 break;

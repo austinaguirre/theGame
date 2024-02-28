@@ -899,15 +899,39 @@ void placeStructure(World* world, StructureType structure, TerrainType preferred
     bool placed = false;
     int attempts = 0;
     int maxAttempts = 1000; // Prevent infinite loops
+    char* cityName = NULL; // Variable to hold the city name
+
+    // Determine city name based on structureType
+    switch (structure) {
+        case TITLE_CITY_YANGSE:
+            cityName = "Yangse";
+            break;
+        case TITLE_CITY_RAMONDULL:
+            cityName = "Ramondull";
+            break;
+        case TITLE_CITY_MYKE:
+            cityName = "Myke";
+            break;
+        case TITLE_CITY_DORPORT:
+            cityName = "Dorport";
+            break;
+        default:
+            cityName = "Unknown City";
+            break;
+    }
 
     while (!placed && attempts < maxAttempts) {
         int x = rand() % world->width;
         int y = rand() % world->height;
 
-        // Check if the selected location meets the criteria
         if (isValidLocationForStructure(world, x, y, preferredTerrain, location)) {
-            if (isCity){
+            if (isCity) {
                 world->map[y][x].interactionType = INTERACTION_CITY;
+                City* newCity = malloc(sizeof(City));
+                if (newCity) {
+                    initCity(newCity, cityName); // Pass city name directly
+                    world->map[y][x].city = newCity;
+                }
             }
             world->map[y][x].structure = structure;
             placed = true;
@@ -952,6 +976,12 @@ bool isValidLocationForStructure(World* world, int x, int y, TerrainType preferr
     return true;
 }
 
+City* getCityFromTile(World* world, int playerX, int playerY) {
+    if (playerX < 0 || playerY < 0 || playerX >= world->width || playerY >= world->height) return NULL;
+    Tile* playerTile = &world->map[playerY][playerX]; // Assuming a 2D array
+
+    return playerTile->city; // Directly return the city pointer stored in the tile
+}
 
 
 void world_init(World* world, int width, int height, unsigned int seed) {
@@ -992,9 +1022,21 @@ bool world_can_move_to(const World* world, int x, int y) {
     return true;
 }
 
-void world_free(World* world) {
-    for (int y = 0; y < world->height; y++) {
-        free(world->map[y]);
+// void world_free(World* world) {
+//     for (int y = 0; y < world->height; y++) {
+//         free(world->map[y]);
+//     }
+//     free(world->map);
+// }
+void freeWorld(World* world) {
+    for (int i = 0; i < world->height; i++) {
+        for (int j = 0; j < world->width; j++) {
+            if (world->map[i][j].city != NULL) {
+                freeCity(world->map[i][j].city);
+                free(world->map[i][j].city);
+            }
+        }
+        free(world->map[i]);
     }
     free(world->map);
 }

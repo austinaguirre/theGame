@@ -4,6 +4,7 @@
 
 #include <SDL.h>
 #include <stdbool.h>
+#include "city.h"
 
 struct Camera;
 
@@ -90,6 +91,7 @@ typedef struct {
     StructureType structure;
     SpecialFeatureType specialFeature;
     InteractionType interactionType;
+    City* city;
 } Tile;
 
 // World structure
@@ -169,5 +171,7 @@ bool isInNorthernHalf(World* world, int y);
 void placeStructures(World* world);
 void placeStructure(World* world, StructureType structure, TerrainType preferredTerrain, const char* location, bool isCity);
 bool isValidLocationForStructure(World* world, int x, int y, TerrainType preferredTerrain, const char* location);
+
+City* getCityFromTile(World* world, int playerX, int playerY);
 
 #endif

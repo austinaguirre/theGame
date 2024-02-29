@@ -309,5 +309,44 @@ Item* createSpellItem(SpellType spellType, const char* name, int value, int powe
     return newItem;
 }
 
+// Function implementation in inventory.c
+void addItemToPlayerInventory(PlayerInventory* inventory, const Item* item) {
+    // Find the first empty slot in the inventory
+    for (int i = 0; i < 180; i++) { // Assuming 180 is the size of the inventory
+        if (inventory->inventoryItems[i] == NULL) {
+            // Assuming a function that correctly duplicates an Item, including deep copying strings or other dynamic content
+            inventory->inventoryItems[i] = duplicateItem(item);
+            printf("Added %s to inventory\n", item->name);
+            return;
+        }
+    }
+    printf("Inventory is full, cannot add %s\n", item->name);
+}
+
+Item* duplicateItem(const Item* source) {
+    if (!source) return NULL;
+
+    Item* newItem = malloc(sizeof(Item));
+    if (!newItem) return NULL; // Memory allocation failed
+
+    // Copy simple fields
+    newItem->type = source->type;
+    newItem->value = source->value;
+
+    // Duplicate string field
+    newItem->name = strdup(source->name);
+
+    // Copy nested structures
+    newItem->equipment = source->equipment;
+    newItem->weapon = source->weapon;
+    newItem->spell = source->spell;
+
+    // For dynamically allocated fields inside nested structures, ensure deep copy if applicable
+
+    return newItem;
+}
+
+
+
 
 

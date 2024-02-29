@@ -14,4 +14,6 @@ void render_text(SDL_Renderer* renderer, const char* text, int x, int y, SDL_Col
 // Clean up text rendering system
 void text_cleanup(void);
 
+char* strdupToLower(const char* str);
+
 #endif

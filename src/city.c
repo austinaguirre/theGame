@@ -21,7 +21,7 @@ void renderCityInteraction(SDL_Renderer* renderer, City* city) {
 
 
 
-void handle_city_interaction(SDL_Event* event, City* city) {
+void handle_city_interaction(SDL_Event* event, City* city, GameState *currentGameState) {
     if (!city || event->type != SDL_MOUSEBUTTONDOWN) return;
 
     int mouseX, mouseY;
@@ -31,46 +31,54 @@ void handle_city_interaction(SDL_Event* event, City* city) {
         SDL_Rect shopArea = city->shops[i].area;
         if (mouseX >= shopArea.x && mouseX < (shopArea.x + shopArea.w) &&
             mouseY >= shopArea.y && mouseY < (shopArea.y + shopArea.h)) {
-            printf("Shop %d clicked\n", i);
-            // Add functionality for opening the shop here
+            currentShop = &city->shops[i]; // Shop was clicked, set as currentShop
+            // Change game state or signal to render and interact with this shop
+            *currentGameState = INSIDE_SHOP;
             break;
         }
     }
 }
 
 void initCity(City* city, const char* cityName) {
-    city->name = strdup(cityName); // Set city name
-
-    city->numShops = 3;
+    city->name = strdup(cityName);
+    city->numShops = 5;
     city->shops = malloc(sizeof(Shop) * city->numShops);
     if (!city->shops) return;
 
+    // Sample items for shops - In a real scenario, these would be more dynamic
+    Item sampleItems[5]; // Assuming you have a way to create sample items
+
     for (int i = 0; i < city->numShops; i++) {
         city->shops[i].name = malloc(sizeof(char) * 30);
-        sprintf(city->shops[i].name, "Shop %d in %s", i + 1, city->name);
+        sprintf(city->shops[i].name, "shop %d in %s", i + 1, strdupToLower(city->name));
 
-        int numItems = 5;
-        city->shops[i].inventory = malloc(sizeof(Item) * numItems);
-        city->shops[i].numItems = numItems;
-        city->shops[i].area = (SDL_Rect){100 + i * 150, 100, 100, 100};
+        // Assuming a function to fill sampleItems for each shop differently
+        fillShopWithItems(sampleItems, 5, i, cityName); // Pseudo-function to initialize items
 
-        for (int j = 0; j < numItems; j++) {
-            city->shops[i].inventory[j].name = malloc(sizeof(char) * 50);
-            sprintf(city->shops[i].inventory[j].name, "Item %d-%d", i + 1, j + 1);
-            city->shops[i].inventory[j].value = (j + 1) * 10;
-        }
+        // Use the new shop initialization function here
+        initShop(&city->shops[i], city->shops[i].name, sampleItems, 5);
+
+        // Define the clickable area for each shop in the city
+        city->shops[i].area = (SDL_Rect){50 + i * 150, 100, 100, 100};
     }
 }
 
 void freeCity(City* city) {
+    if (city == NULL) return;
+    
+    // Free each shop
     for (int i = 0; i < city->numShops; i++) {
-        for (int j = 0; j < city->shops[i].numItems; j++) {
-            free(city->shops[i].inventory[j].name); // Free each item's name
-        }
-        free(city->shops[i].inventory); // Free the inventory array
-        free(city->shops[i].name); // Free the shop's name
+        freeShop(&city->shops[i]);
     }
-    free(city->shops); // Finally, free the shops array
+    
+    // Free the shops array
+    free(city->shops);
+    
+    // Free the city's name
+    free(city->name);
+    
+    // Optionally, if City itself was dynamically allocated, free the city here
+    // free(city);
 }
 
 

@@ -1022,12 +1022,6 @@ bool world_can_move_to(const World* world, int x, int y) {
     return true;
 }
 
-// void world_free(World* world) {
-//     for (int y = 0; y < world->height; y++) {
-//         free(world->map[y]);
-//     }
-//     free(world->map);
-// }
 void freeWorld(World* world) {
     for (int i = 0; i < world->height; i++) {
         for (int j = 0; j < world->width; j++) {

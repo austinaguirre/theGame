@@ -11,7 +11,8 @@ typedef enum GameState {
     ENEMY_ENCOUNTER,
     CITY_INTERACTION,
     INVENTORY,
-    STATS_PAGE
+    STATS_PAGE,
+    INSIDE_SHOP
 } GameState;
 
 #endif

@@ -1,6 +1,9 @@
 #include "text.h"
 #include <string.h>
 #include <SDL_image.h>
+#include <ctype.h>
+#include <stdlib.h>
+
 
 static SDL_Texture* fontTexture = NULL;
 static SDL_Rect characterMap[128];
@@ -104,3 +107,12 @@ void text_cleanup(void) {
     }
 }
 
+
+char* strdupToLower(const char* str) {
+    if (str == NULL) return NULL;
+    char* lowerStr = strdup(str);
+    for (int i = 0; lowerStr[i]; i++) {
+        lowerStr[i] = tolower(lowerStr[i]);
+    }
+    return lowerStr;
+}

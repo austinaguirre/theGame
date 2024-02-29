@@ -108,4 +108,7 @@ const char* weaponTypeToString(WeaponType type);
 const char* spellTypeToString(SpellType type);
 void logItemDetails(const Item* item);
 
+void addItemToPlayerInventory(PlayerInventory* inventory, const Item* item);
+Item* duplicateItem(const Item* source);
+
 #endif

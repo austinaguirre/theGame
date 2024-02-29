@@ -44,6 +44,8 @@ int main(int argc, char* argv[]) {
     UIButton buttonInventory = {0, 400, 50, 50, "Inventory"};
     UIButton buttonStatsPage = {0, 450, 50, 50, "Stats Page"};
 
+    SDL_Point mousePos;
+
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
@@ -72,6 +74,7 @@ int main(int argc, char* argv[]) {
                 }
             }
 
+            SDL_GetMouseState(&mousePos.x, &mousePos.y);
 
             // Handle input based on the current game state
             switch (currentGameState) {
@@ -93,7 +96,7 @@ int main(int argc, char* argv[]) {
                     break;
                 case CITY_INTERACTION:{
                     City* currentCity = getCityFromTile(&world, player.x, player.y);
-                    if (currentCity != NULL) {handle_city_interaction(&event, currentCity);}
+                    if (currentCity != NULL) {handle_city_interaction(&event, currentCity, &currentGameState);}
                     break;
                 }
                 case INVENTORY:
@@ -108,6 +111,9 @@ int main(int argc, char* argv[]) {
                     break;
                 case STATS_PAGE:
                     handle_stats_page_input(&event);
+                    break;
+                case INSIDE_SHOP:
+                    handleShopInput(&event, &player.inventory);
                     break;
             }
         }
@@ -152,6 +158,9 @@ int main(int argc, char* argv[]) {
                 break;
             case STATS_PAGE:
                 renderStatsPageScreen(renderer, &player.stats, &player.characterClass);
+                break;
+            case INSIDE_SHOP:
+                renderShopScreen(renderer, mousePos);
                 break;
         }
 

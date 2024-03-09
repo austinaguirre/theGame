@@ -18,10 +18,13 @@ typedef struct {
 extern Shop* currentShop;
 
 void initShop(Shop* shop, const char* name, Item* items, int numItems);
-void renderShopScreen(SDL_Renderer* renderer, SDL_Point mousePos);
+void renderShopScreen(SDL_Renderer* renderer, SDL_Point mousePos, const PlayerInventory* inventory);
 void handleShopInput(SDL_Event* event, PlayerInventory* playerInventory);
 void freeShop(Shop* shop);
 void fillShopWithItems(Item* items, int numItems, int shopIndex, const char* cityName);
+void renderInventoryScreenShop(SDL_Renderer* renderer, const PlayerInventory* inventory);
+SDL_Point calculateShopItemPosition(int index);
+int getShopItemUnderMouse(int mouseX, int mouseY);
 
 #endif // SHOP_H
 

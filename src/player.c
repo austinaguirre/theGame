@@ -49,6 +49,7 @@ void player_init_inventory(Player* player) {
     player->inventory.rightLeg = NULL;
     player->inventory.weapon = createWeaponItem(WEAPON_TYPE_SWORD, "Sword", 200, 15, 1);
     player->inventory.secondaryWeapon = NULL;
+    player->inventory.coins = 100;
 
     // Initialize the spell pouch with placeholder spells and the other half as NULL
     for (int i = 0; i < 10; i++) {

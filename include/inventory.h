@@ -4,6 +4,8 @@
 
 #include <SDL.h>
 #include <stdbool.h>
+#include "text.h"
+#include "config.h"
 typedef enum {
     ITEM_TYPE_NONE = -1,
     ITEM_TYPE_EQUIPMENT,
@@ -84,6 +86,7 @@ typedef struct {
     bool isDragging; // Flag to indicate if an item is currently being dragged
     SDL_Point draggedItemPos; // Position of the dragged item (relative to the mouse cursor)
     int draggedItemSource;
+    int coins;
 } PlayerInventory;
 
 
@@ -92,6 +95,7 @@ void renderDraggedItem(SDL_Renderer* renderer, PlayerInventory* inventory);
 void renderEquipmentSlot(SDL_Renderer* renderer, const Item* item, int x, int y);
 SDL_Point calculateItemPosition(int index);
 void renderInventoryItem(SDL_Renderer* renderer, const Item* item, SDL_Point position);
+void renderCoins (SDL_Renderer* renderer, int coins);
 
 Item* createItem(ItemType type, const char* name, int value);
 Item* createEquipmentItem(EquipmentType equipmentType, const char* name, int value, int defense);

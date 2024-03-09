@@ -36,6 +36,16 @@ void renderInventoryScreen(SDL_Renderer* renderer, const PlayerInventory* invent
         SDL_Point position = calculateSpellPosition(i, WINDOW_WIDTH);
         renderSpell(renderer, inventory->spellPouch[i], position);
     }
+
+    renderCoins(renderer, inventory->coins);
+}
+
+void renderCoins (SDL_Renderer* renderer, int coins){
+    char val[256];
+
+    sprintf(val, "coins: %d", coins);
+
+    render_text(renderer, val, 5, 570, textColor, textScale * 0.35);
 }
 
 void pickItemColor(SDL_Renderer* renderer, const Item* item) {
@@ -311,12 +321,22 @@ Item* createSpellItem(SpellType spellType, const char* name, int value, int powe
 
 // Function implementation in inventory.c
 void addItemToPlayerInventory(PlayerInventory* inventory, const Item* item) {
+
+    //implement logic for coin requirements
+    if (inventory->coins < item->value){
+        printf("noc ");
+        return;
+    }
+
     // Find the first empty slot in the inventory
     for (int i = 0; i < 180; i++) { // Assuming 180 is the size of the inventory
         if (inventory->inventoryItems[i] == NULL) {
             // Assuming a function that correctly duplicates an Item, including deep copying strings or other dynamic content
             inventory->inventoryItems[i] = duplicateItem(item);
             printf("Added %s to inventory\n", item->name);
+
+            //actully take the money????
+            inventory->coins -= item->value;
             return;
         }
     }

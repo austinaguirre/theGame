@@ -92,7 +92,7 @@ void fillShopWithItems(Item* items, int numItems, int shopIndex, const char* cit
     }
 }
 
-void renderShopScreen(SDL_Renderer* renderer, SDL_Point mousePos) {
+void renderShopScreen(SDL_Renderer* renderer, SDL_Point mousePos, const PlayerInventory* inventory) {
     if (!currentShop) return;
 
     // Set background for the shop screen
@@ -108,6 +108,10 @@ void renderShopScreen(SDL_Renderer* renderer, SDL_Point mousePos) {
     int size = 50; // Size of the square representing an item
     int itemsPerRow = 5; // Number of items per row
     bool itemHovered = false;
+
+    renderInventoryScreenShop(renderer, inventory);
+
+    renderCoins(renderer, inventory->coins);
 
     for (int i = 0; i < currentShop->numItems; i++) {
         int row = i / itemsPerRow;
@@ -146,7 +150,31 @@ void renderShopScreen(SDL_Renderer* renderer, SDL_Point mousePos) {
     }
 }
 
+SDL_Point calculateShopItemPosition(int index) {
+    int itemsPerRow = 5; // Number of items per row in the grid
+    int itemSize = 50; // Smaller item size for compact view
+    int padding = 10; // Smaller padding between items
+    int startX = 20; // Right align the grid with some margin
+    int startY = 60; // Start from top with some margin
 
+    SDL_Point position;
+    position.x = startX + (index % itemsPerRow) * (itemSize + padding);
+    position.y = startY + (index / itemsPerRow) * (itemSize + padding);
+    return position;
+}
+
+int getShopItemUnderMouse(int mouseX, int mouseY) {
+    for (int i = 0; i < 180; i++) {
+        SDL_Point slotPosition = calculateShopItemPosition(i);
+        SDL_Rect slotRect = {slotPosition.x, slotPosition.y, 50, 50};
+
+        if (mouseX >= slotRect.x && mouseX < (slotRect.x + slotRect.w) &&
+            mouseY >= slotRect.y && mouseY < (slotRect.y + slotRect.h)) {
+            return i;
+        }
+    }
+    return -1;
+}
 
 
 void handleShopInput(SDL_Event* event, PlayerInventory* playerInventory) {
@@ -156,11 +184,11 @@ void handleShopInput(SDL_Event* event, PlayerInventory* playerInventory) {
         int mouseX, mouseY;
         SDL_GetMouseState(&mouseX, &mouseY);
 
-        // Assuming each item is rendered in a 30px height block starting from Y=50
-        int clickedItemIndex = (mouseY - 50) / 30;
-        if (clickedItemIndex >= 0 && clickedItemIndex < currentShop->numItems) {
+        int clickedIndex = getShopItemUnderMouse(mouseX, mouseY);
+
+        if (clickedIndex >= 0 && clickedIndex < currentShop->numItems) {
             // Add the clicked item to the player's inventory if there's space
-            addItemToPlayerInventory(playerInventory, &currentShop->items[clickedItemIndex]);
+            addItemToPlayerInventory(playerInventory, &currentShop->items[clickedIndex]);
         }
     }
 }
@@ -183,5 +211,11 @@ void freeShop(Shop* shop) {
     free(shop->name);
 }
 
-
+void renderInventoryScreenShop(SDL_Renderer* renderer, const PlayerInventory* inventory){
+    //render inv
+    for (int i = 0; i < 180; i++) {
+        SDL_Point position = calculateItemPosition(i);
+        renderInventoryItem(renderer, inventory->inventoryItems[i], position);
+    }
+}
 

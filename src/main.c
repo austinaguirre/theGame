@@ -160,7 +160,7 @@ int main(int argc, char* argv[]) {
                 renderStatsPageScreen(renderer, &player.stats, &player.characterClass);
                 break;
             case INSIDE_SHOP:
-                renderShopScreen(renderer, mousePos);
+                renderShopScreen(renderer, mousePos, &player.inventory);
                 break;
         }
 

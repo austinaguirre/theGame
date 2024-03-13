@@ -75,7 +75,7 @@ void renderSubStats(SDL_Renderer* renderer, PlayerStats* playerStats, int mainSt
             render_text(renderer, statText, x, y, textColor, textScale * 0.4);
             y += incr;
 
-            sprintf(statText, "Melee Resistance: %d", playerStats->defence.meleeResistance);
+            sprintf(statText, "melee resistance: %d", playerStats->defence.meleeResistance);
             render_text(renderer, statText, x, y, textColor, textScale * 0.4);
             break;
         case 3: // Magic Stats

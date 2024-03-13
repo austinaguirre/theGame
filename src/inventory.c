@@ -262,17 +262,18 @@ const char* spellTypeToString(SpellType type) {
 }
 
 // Function to create a general item (for gems or general purposes)
-Item* createItem(ItemType type, const char* name, int value) {
+Item* createItem(ItemType type, const char* name, int value, int requiredLevel) {
     Item* newItem = malloc(sizeof(Item));
     newItem->type = type;
     newItem->name = strdup(name);
     newItem->value = value;
+    newItem->requiredLevel = requiredLevel;
     printf("Creating Item: %s, Type: %s, Value: %d\n", name, itemTypeToString(type), value);
     return newItem;
 }
 
 // Function to create an equipment item
-Item* createEquipmentItem(EquipmentType equipmentType, const char* name, int value, int defense) {
+Item* createEquipmentItem(EquipmentType equipmentType, const char* name, int value, int defense, int requiredLevel) {
     Item* newItem = malloc(sizeof(Item));
     newItem->type = ITEM_TYPE_EQUIPMENT;
     newItem->name = strdup(name);
@@ -281,13 +282,14 @@ Item* createEquipmentItem(EquipmentType equipmentType, const char* name, int val
     newItem->equipment.defense = defense;
     newItem->weapon.weaponType = WEAPON_TYPE_NONE;
     newItem->spell.spellType = SPELL_TYPE_NONE;
+    newItem->requiredLevel = requiredLevel;
     printf("Creating Equipment: %s, Equipment.equipmentType: %s, Type: %s, Defense: %d, Value: %d\n", 
             name, equipmentTypeToString(equipmentType),itemTypeToString(newItem->type), defense, value);
     return newItem;
 }
 
 // Function to create a weapon item
-Item* createWeaponItem(WeaponType weaponType, const char* name, int value, int damage, int attackRate) {
+Item* createWeaponItem(WeaponType weaponType, const char* name, int value, int damage, int attackRate, int requiredLevel) {
     Item* newItem = malloc(sizeof(Item));
     newItem->type = ITEM_TYPE_WEAPON;
     newItem->name = strdup(name);
@@ -298,13 +300,14 @@ Item* createWeaponItem(WeaponType weaponType, const char* name, int value, int d
     newItem->type = ITEM_TYPE_WEAPON;
     newItem->spell.spellType = SPELL_TYPE_NONE;
     newItem->equipment.equipmentType = EQUIPMENT_TYPE_NONE;
+    newItem->requiredLevel = requiredLevel;
     printf("Creating Weapon: %s, weaponType: %s, type: %s, Damage: %d, Attack Rate: %d, Value: %d\n",
                 name, weaponTypeToString(weaponType), itemTypeToString(newItem->type), damage, attackRate, value);
     return newItem;
 }
 
 // Function to create a spell item
-Item* createSpellItem(SpellType spellType, const char* name, int value, int power, int duration) {
+Item* createSpellItem(SpellType spellType, const char* name, int value, int power, int duration, int requiredLevel) {
     Item* newItem = malloc(sizeof(Item));
     newItem->type = ITEM_TYPE_SPELL;
     newItem->name = strdup(name);
@@ -314,6 +317,7 @@ Item* createSpellItem(SpellType spellType, const char* name, int value, int powe
     newItem->spell.duration = duration;
     newItem->equipment.equipmentType = EQUIPMENT_TYPE_NONE;
     newItem->weapon.weaponType = WEAPON_TYPE_NONE;
+    newItem->requiredLevel = requiredLevel;
     printf("Creating Spell: %s, SpellType: %s, type: %s, Power: %d, Duration: %d, Value: %d\n",
            name, spellTypeToString(spellType), itemTypeToString(newItem->type), power, duration, value);
     return newItem;

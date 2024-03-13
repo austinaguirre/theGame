@@ -28,26 +28,26 @@ void player_init_inventory(Player* player) {
     // Initialize stats
     player->stats.melee.strength = 10;
     player->stats.melee.attackSpeed = 10;
-    player->stats.range.accuracy = 2;
+    player->stats.range.accuracy = 10;
     player->stats.range.reloadSpeed = 2;
     player->stats.defence.health = 120;
     player->stats.defence.healthRecovery = 12;
     player->stats.defence.magicResistance = 5;
-    player->stats.defence.meleeResistance = 6;
-    player->stats.magic.spellPower = 0;
+    player->stats.defence.meleeResistance = 10;
+    player->stats.magic.spellPower = 10;
     player->stats.magic.mana = 10;
     player->stats.magic.manaRecovery = 1;
     player->stats.agility.dodgeChance = 10;
     player->stats.agility.movementSpeed = 10;
 
     // Initialize equipment slots with NULL or placeholder items
-    player->inventory.helmet = createEquipmentItem(EQUIPMENT_TYPE_HELMET, "Helmet", 100, 5);
-    player->inventory.chest = createEquipmentItem(EQUIPMENT_TYPE_CHEST, "Chest", 150, 10);
+    player->inventory.helmet = createEquipmentItem(EQUIPMENT_TYPE_HELMET, "Helmet", 100, 5, 5);
+    player->inventory.chest = createEquipmentItem(EQUIPMENT_TYPE_CHEST, "Chest", 150, 10, 5);
     player->inventory.leftArm = NULL;
     player->inventory.rightArm = NULL;
     player->inventory.leftLeg = NULL;
     player->inventory.rightLeg = NULL;
-    player->inventory.weapon = createWeaponItem(WEAPON_TYPE_SWORD, "Sword", 200, 15, 1);
+    player->inventory.weapon = createWeaponItem(WEAPON_TYPE_SWORD, "Sword", 200, 15, 1, 5);
     player->inventory.secondaryWeapon = NULL;
     player->inventory.coins = 100;
 
@@ -56,7 +56,7 @@ void player_init_inventory(Player* player) {
         if (i < 5) { // First half filled with spells
             char spellName[30];
             sprintf(spellName, "Spell %d", i + 1);
-            player->inventory.spellPouch[i] = createSpellItem(SPELL_TYPE_DAMAGE, spellName, 50, 10, 5);
+            player->inventory.spellPouch[i] = createSpellItem(SPELL_TYPE_DAMAGE, spellName, 50, 10, 5, 5);
         } else { // Second half set to NULL
             player->inventory.spellPouch[i] = NULL;
         }
@@ -68,31 +68,31 @@ void player_init_inventory(Player* player) {
             char itemName[30];
             if (i <= 10) {
                 sprintf(itemName, "Gem %d", i);
-                player->inventory.inventoryItems[i] = createItem(ITEM_TYPE_GEM, itemName, 25);
+                player->inventory.inventoryItems[i] = createItem(ITEM_TYPE_GEM, itemName, 25, 5);
             } else if (i <= 20){
                 sprintf(itemName, "Equipment %d", i);
-                player->inventory.inventoryItems[i] = createEquipmentItem(EQUIPMENT_TYPE_ARM, itemName, 50, 2);
+                player->inventory.inventoryItems[i] = createEquipmentItem(EQUIPMENT_TYPE_ARM, itemName, 50, 2, 5);
             }else if (i <= 30){
                 sprintf(itemName, "Spell %d", i + 1);
-                player->inventory.inventoryItems[i] = createSpellItem(SPELL_TYPE_DAMAGE, itemName, 50, 10, 5);
+                player->inventory.inventoryItems[i] = createSpellItem(SPELL_TYPE_DAMAGE, itemName, 50, 10, 5, 5);
             }else if (i <= 40){
                 sprintf(itemName, "Equipment %d", i);
-                player->inventory.inventoryItems[i] = createEquipmentItem(EQUIPMENT_TYPE_ARM, itemName, 50, 2);
+                player->inventory.inventoryItems[i] = createEquipmentItem(EQUIPMENT_TYPE_ARM, itemName, 50, 2, 5);
             }else if (i <= 50){
                 sprintf(itemName, "staff %d", i);
-                player->inventory.inventoryItems[i] = createWeaponItem(WEAPON_TYPE_STAFF, itemName, 50, 2, 1);
+                player->inventory.inventoryItems[i] = createWeaponItem(WEAPON_TYPE_STAFF, itemName, 50, 2, 1, 5);
             }else if (i <= 60){
                 sprintf(itemName, "shield %d", i);
-                player->inventory.inventoryItems[i] = createEquipmentItem(EQUIPMENT_TYPE_SHIELD, itemName, 50, 2);
+                player->inventory.inventoryItems[i] = createEquipmentItem(EQUIPMENT_TYPE_SHIELD, itemName, 50, 2, 5);
             }else if (i <= 70){
                 sprintf(itemName, "sword %d", i);
-                player->inventory.inventoryItems[i] = createWeaponItem(WEAPON_TYPE_SWORD, itemName, 50, 3, 3);
+                player->inventory.inventoryItems[i] = createWeaponItem(WEAPON_TYPE_SWORD, itemName, 50, 3, 3, 5);
             }else if (i <= 80){
                 sprintf(itemName, "spell %d", i);
-                player->inventory.inventoryItems[i] = createSpellItem(SPELL_TYPE_DEBUFF, itemName, 50, 10, 5);
+                player->inventory.inventoryItems[i] = createSpellItem(SPELL_TYPE_DEBUFF, itemName, 50, 10, 5, 5);
             }else{
                 sprintf(itemName, "spell %d", i);
-                player->inventory.inventoryItems[i] = createSpellItem(SPELL_TYPE_HEAL, itemName, 50, 10, 5);
+                player->inventory.inventoryItems[i] = createSpellItem(SPELL_TYPE_HEAL, itemName, 50, 10, 5, 5);
             }
         } else { // Second half set to NULL
             player->inventory.inventoryItems[i] = NULL;
@@ -119,7 +119,7 @@ void equipItemToSlot(Player* player, Item* draggedItem, int slotIndex) {
             return;
     }
 
-    if (!isWeaponTypeValidForSlot(slotIndex, draggedItem->weapon.weaponType, draggedItem->equipment.equipmentType)) {
+    if (!isWeaponTypeValidForSlot(slotIndex, draggedItem->weapon.weaponType, draggedItem->equipment.equipmentType, draggedItem->requiredLevel, player->stats)) {
         // Reset dragged item info and exit if not valid
         player->inventory.draggedItem = NULL;
         player->inventory.draggedItemIndex = -1;
@@ -147,12 +147,40 @@ void equipItemToSlot(Player* player, Item* draggedItem, int slotIndex) {
     player->inventory.draggedItemIndex = -1;
 }
 
-bool isWeaponTypeValidForSlot(int slotIndex, WeaponType weaponType, EquipmentType equipmentType) {
-
-    //something about levels here
-
+bool isWeaponTypeValidForSlot(int slotIndex, WeaponType weaponType, EquipmentType equipmentType, int requiredLevel, PlayerStats playerStats) {
     // Check for weapon slots
     if (slotIndex == 6 || slotIndex == 7) {
+
+        if (equipmentType == EQUIPMENT_TYPE_SHIELD){
+            if(requiredLevel > playerStats.defence.meleeResistance){
+                return false;
+            }else{
+                return true;
+            }
+        }
+        switch (weaponType){
+            case WEAPON_TYPE_BOW:
+                if (requiredLevel > playerStats.range.accuracy){
+                    return false;
+                }else{
+                    return true;
+                }
+            case WEAPON_TYPE_STAFF:
+                if (requiredLevel > playerStats.magic.spellPower){
+                    return false;
+                }else{
+                    return true;
+                }
+            case WEAPON_TYPE_SWORD:
+                if(requiredLevel > playerStats.melee.strength){
+                    return false;
+                }else{
+                    return true;
+                }
+            default:
+                return false;
+        }
+
         return weaponType == WEAPON_TYPE_BOW ||
                weaponType == WEAPON_TYPE_STAFF ||
                weaponType == WEAPON_TYPE_SWORD ||
@@ -160,6 +188,10 @@ bool isWeaponTypeValidForSlot(int slotIndex, WeaponType weaponType, EquipmentTyp
     }
     // Check for armor slots
     else if (slotIndex <= 5) {
+        if (requiredLevel > playerStats.defence.meleeResistance){
+            return false;
+        }
+
         return equipmentType == EQUIPMENT_TYPE_ARM ||
                equipmentType == EQUIPMENT_TYPE_CHEST ||
                equipmentType == EQUIPMENT_TYPE_HELMET ||

@@ -45,6 +45,7 @@ typedef struct {
     ItemType type;
     char* name; // Name of the item
     int value; // General value for the item, applicable to all types
+    int requiredLevel;
     struct {
         EquipmentType equipmentType;
         int defense; // For armor items
@@ -97,10 +98,10 @@ SDL_Point calculateItemPosition(int index);
 void renderInventoryItem(SDL_Renderer* renderer, const Item* item, SDL_Point position);
 void renderCoins (SDL_Renderer* renderer, int coins);
 
-Item* createItem(ItemType type, const char* name, int value);
-Item* createEquipmentItem(EquipmentType equipmentType, const char* name, int value, int defense);
-Item* createWeaponItem(WeaponType weaponType, const char* name, int value, int damage, int attackRate);
-Item* createSpellItem(SpellType spellType, const char* name, int value, int power, int duration);
+Item* createItem(ItemType type, const char* name, int value, int requiredLevel);
+Item* createEquipmentItem(EquipmentType equipmentType, const char* name, int value, int defense, int requiredLevel);
+Item* createWeaponItem(WeaponType weaponType, const char* name, int value, int damage, int attackRate, int requiredLevel);
+Item* createSpellItem(SpellType spellType, const char* name, int value, int power, int duration, int requiredLevel);
 
 SDL_Point calculateSpellPosition(int index, int windowWidth);
 void renderSpell(SDL_Renderer* renderer, const Item* spell, SDL_Point position);

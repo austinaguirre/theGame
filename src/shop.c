@@ -22,19 +22,19 @@ void fillShopWithItems(Item* items, int numItems, int shopIndex, const char* cit
                 if (strcmp(cityName, "Yangse") == 0) {
                     // Myke might have a variety of weapon types
                     sprintf(itemName, "yangse weapon %d-%d", shopIndex, i);
-                    items[i] = *createWeaponItem(i % 3, itemName, i * 25 + 10, i * 2 + 5, i % 3 + 1); // Cycle through weapon types
+                    items[i] = *createWeaponItem(i % 3, itemName, i * 25 + 10, i * 2 + 5, i % 3 + 1, 5); // Cycle through weapon types
                 } else if (strcmp(cityName, "Ramondull") == 0) {
                     // Myke might have a variety of weapon types
                     sprintf(itemName, "ramondull weapon %d-%d", shopIndex, i);
-                    items[i] = *createWeaponItem(i % 3, itemName, i * 25 + 10, i * 2 + 5, i % 3 + 1); // Cycle through weapon types
+                    items[i] = *createWeaponItem(i % 3, itemName, i * 25 + 10, i * 2 + 5, i % 3 + 1, 5); // Cycle through weapon types
                 } else if (strcmp(cityName, "Myke") == 0) {
                     // Myke might have a variety of weapon types
                     sprintf(itemName, "myke weapon %d-%d", shopIndex, i);
-                    items[i] = *createWeaponItem(i % 3, itemName, i * 25 + 10, i * 2 + 5, i % 3 + 1); // Cycle through weapon types
+                    items[i] = *createWeaponItem(i % 3, itemName, i * 25 + 10, i * 2 + 5, i % 3 + 1, 5); // Cycle through weapon types
                 } else if (strcmp(cityName, "Dorport") == 0) {
                     // Myke might have a variety of weapon types
                     sprintf(itemName, "dorport weapon %d-%d", shopIndex, i);
-                    items[i] = *createWeaponItem(i % 3, itemName, i * 25 + 10, i * 2 + 5, i % 3 + 1); // Cycle through weapon types
+                    items[i] = *createWeaponItem(i % 3, itemName, i * 25 + 10, i * 2 + 5, i % 3 + 1, 5); // Cycle through weapon types
                 } else {
 
                 }
@@ -43,19 +43,19 @@ void fillShopWithItems(Item* items, int numItems, int shopIndex, const char* cit
                 if (strcmp(cityName, "Yangse") == 0) {
                     // Dorport might specialize in defensive equipment
                     sprintf(itemName, "yangse armour %d-%d", shopIndex, i);
-                    items[i] = *createEquipmentItem(EQUIPMENT_TYPE_ARM, itemName, i * 30 + 15, i * 4 + 10); // Armour with increasing defense
+                    items[i] = *createEquipmentItem(EQUIPMENT_TYPE_ARM, itemName, i * 30 + 15, i * 4 + 10, 5); // Armour with increasing defense
                 } else if (strcmp(cityName, "Ramondull") == 0) {
                     // Dorport might specialize in defensive equipment
                     sprintf(itemName, "ramondull armour %d-%d", shopIndex, i);
-                    items[i] = *createEquipmentItem(EQUIPMENT_TYPE_ARM, itemName, i * 30 + 15, i * 4 + 10); // Armour with increasing defense
+                    items[i] = *createEquipmentItem(EQUIPMENT_TYPE_ARM, itemName, i * 30 + 15, i * 4 + 10, 5); // Armour with increasing defense
                 } else if (strcmp(cityName, "Myke") == 0) {
                     // Dorport might specialize in defensive equipment
                     sprintf(itemName, "myke armour %d-%d", shopIndex, i);
-                    items[i] = *createEquipmentItem(EQUIPMENT_TYPE_ARM, itemName, i * 30 + 15, i * 4 + 10); // Armour with increasing defense
+                    items[i] = *createEquipmentItem(EQUIPMENT_TYPE_ARM, itemName, i * 30 + 15, i * 4 + 10, 5); // Armour with increasing defense
                 } else if (strcmp(cityName, "Dorport") == 0) {
                     // Dorport might specialize in defensive equipment
                     sprintf(itemName, "dorport armour %d-%d", shopIndex, i);
-                    items[i] = *createEquipmentItem(EQUIPMENT_TYPE_ARM, itemName, i * 30 + 15, i * 4 + 10); // Armour with increasing defense
+                    items[i] = *createEquipmentItem(EQUIPMENT_TYPE_ARM, itemName, i * 30 + 15, i * 4 + 10, 5); // Armour with increasing defense
                 } else {
 
                 }
@@ -64,29 +64,29 @@ void fillShopWithItems(Item* items, int numItems, int shopIndex, const char* cit
                 if (strcmp(cityName, "Yangse") == 0) {
                     // Ramondull might favor magical items
                     sprintf(itemName, "yangse magic %d-%d", shopIndex, i);
-                    items[i] = *createSpellItem(i % 2 ? SPELL_TYPE_DAMAGE : SPELL_TYPE_HEAL, itemName, i * 20 + 5, i * 3 + 10, i * 2 + 5); // Alternating spell types
+                    items[i] = *createSpellItem(i % 2 ? SPELL_TYPE_DAMAGE : SPELL_TYPE_HEAL, itemName, i * 20 + 5, i * 3 + 10, i * 2 + 5, 5); // Alternating spell types
                 } else if (strcmp(cityName, "Ramondull") == 0) {
                     // Ramondull might favor magical items
                     sprintf(itemName, "ramondull magic %d-%d", shopIndex, i);
-                    items[i] = *createSpellItem(i % 2 ? SPELL_TYPE_DAMAGE : SPELL_TYPE_HEAL, itemName, i * 20 + 5, i * 3 + 10, i * 2 + 5); // Alternating spell types
+                    items[i] = *createSpellItem(i % 2 ? SPELL_TYPE_DAMAGE : SPELL_TYPE_HEAL, itemName, i * 20 + 5, i * 3 + 10, i * 2 + 5, 5); // Alternating spell types
                 } else if (strcmp(cityName, "Myke") == 0) {
                     // Ramondull might favor magical items
                     sprintf(itemName, "myke magic %d-%d", shopIndex, i);
-                    items[i] = *createSpellItem(i % 2 ? SPELL_TYPE_DAMAGE : SPELL_TYPE_HEAL, itemName, i * 20 + 5, i * 3 + 10, i * 2 + 5); // Alternating spell types
+                    items[i] = *createSpellItem(i % 2 ? SPELL_TYPE_DAMAGE : SPELL_TYPE_HEAL, itemName, i * 20 + 5, i * 3 + 10, i * 2 + 5, 5); // Alternating spell types
                 } else if (strcmp(cityName, "Dorport") == 0) {
                     // Ramondull might favor magical items
                     sprintf(itemName, "dorport magic %d-%d", shopIndex, i);
-                    items[i] = *createSpellItem(i % 2 ? SPELL_TYPE_DAMAGE : SPELL_TYPE_HEAL, itemName, i * 20 + 5, i * 3 + 10, i * 2 + 5); // Alternating spell types
+                    items[i] = *createSpellItem(i % 2 ? SPELL_TYPE_DAMAGE : SPELL_TYPE_HEAL, itemName, i * 20 + 5, i * 3 + 10, i * 2 + 5, 5); // Alternating spell types
                 } else {
 
                 }
                 break;
             case 3: // Other (general merchandise)
                 sprintf(itemName, "%s misc %d-%d", strdupToLower(cityName), shopIndex, i);
-                items[i] = *createItem(ITEM_TYPE_GEM, itemName, rand() % 100 + 50);
+                items[i] = *createItem(ITEM_TYPE_GEM, itemName, rand() % 100 + 50, 5);
             case 4: // Other (more specialized or rare items)
                 sprintf(itemName, "%s misc %d-%d", strdupToLower(cityName), shopIndex, i);
-                items[i] = *createItem(ITEM_TYPE_GEM, itemName, rand() % 100 + 50);
+                items[i] = *createItem(ITEM_TYPE_GEM, itemName, rand() % 100 + 50, 5);
                 break;
         }
     }
